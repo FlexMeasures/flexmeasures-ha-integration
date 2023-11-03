@@ -1,7 +1,7 @@
 {
   "domain": "flexmeasures",
   "name": "FlexMeasures",
-  "codeowners": ["@flix6x"],
+  "codeowners": ["@GustaafL"],
   "config_flow": true,
   "dependencies": ["websocket_api"],
   "documentation": "https://www.home-assistant.io/integrations/flexmeasures",
