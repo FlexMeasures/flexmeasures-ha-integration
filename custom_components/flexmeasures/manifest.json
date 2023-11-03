@@ -10,4 +10,5 @@
   "requirements": ["flexmeasures-client==0.1.4", "pyfiglet==0.8.post1"],
   "ssdp": [],
   "zeroconf": []
+  "issue_tracker": "https://github.com/GustaafL/flexmeasures-hacs/issues",
 }
