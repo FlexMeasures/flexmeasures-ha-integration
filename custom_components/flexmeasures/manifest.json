@@ -1,7 +1,7 @@
 {
   "domain": "flexmeasures",
   "name": "FlexMeasures",
-  "version":"0.0.1"
+  "version":"0.0.1",
   "codeowners": ["@GustaafL"],
   "config_flow": true,
   "dependencies": ["websocket_api"],
