@@ -12,51 +12,55 @@ from homeassistant.config_entries import ConfigEntry, OptionsFlow
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import DOMAIN
-from .helpers import get_previous_option
 
 _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(
-            "host", description={"suggested_value": "https://flexmeasures.seita.nl"}
+            "url", description={"suggested_value": "http://localhost:5000"}
         ): str,
-        vol.Required("username"): str,
+        vol.Required(
+            "username", description={"suggested_value": "toy-user@flexmeasures.io"}
+        ): str,
         vol.Required("password"): str,
+        vol.Required("power_sensor", description={"suggested_value": 1}): int,
+        vol.Required(
+            "consumption_price_sensor", description={"suggested_value": 2}
+        ): int,
+        vol.Required(
+            "production_price_sensor", description={"suggested_value": 2}
+        ): int,
+        vol.Required("soc_sensor", description={"suggested_value": 4}): int,
+        vol.Required("rm_discharge_sensor", description={"suggested_value": 5}): int,
+        vol.Required(
+            "schedule_duration", description={"suggested_value": "PT24H"}
+        ): str,
+        vol.Required("soc_unit", description={"suggested_value": "kWh"}): str,
+        vol.Required("soc_min", description={"suggested_value": 0.001}): float,
+        vol.Required("soc_max", description={"suggested_value": 0.002}): float,
     }
 )
 
 
-class PlaceholderHub:
-    """Placeholder class to make tests pass.
-
-    TODO Remove this placeholder class and replace with things from your PyPI package.
-    """
-
-    def __init__(self, host: str) -> None:
-        """Initialize."""
-        self.host = host
-
-    async def authenticate(self, username: str, password: str) -> bool:
-        """Test if we can authenticate with the host."""
-        return True
-
-
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
-    """Validate the user input allows us to connect.
+    """Validate if the user input allows us to connect.
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
+    host, ssl = get_host_and_ssl_from_url(data["url"])
 
     # Currently used here solely for config validation (i.e. not returned to be stored in the config entry)
     try:
         client = FlexMeasuresClient(
-            host=data["host"],
+            session=async_get_clientsession(hass),
+            host=host,
             email=data["username"],
             password=data["password"],
-            ssl=False,
+            ssl=ssl,
         )
     except Exception as exception:
         raise CannotConnect(exception) from exception
@@ -94,12 +98,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             info = await validate_input(self.hass, user_input)
         except CannotConnect as exception:
             errors["base"] = "cannot_connect"
-            if "host" in str(exception):
-                errors["host"] = str(exception)
-            elif "email" in str(exception):
-                errors["username"] = str(exception)
-            elif "password" in str(exception):
-                errors["password"] = str(exception)
+
+            for field in ("url", "email", "password"):
+                if field in str(exception):
+                    errors[field] = str(exception)
+
         except InvalidAuth:
             errors["base"] = "invalid_auth"
         except Exception:  # pylint: disable=broad-except
@@ -151,7 +154,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         options_schema = vol.Schema(
             {
                 vol.Required(
-                    "host", default=get_previous_option(self.config_entry, "host")
+                    "url", default=get_previous_option(self.config_entry, "url")
                 ): str,
                 vol.Required(
                     "username",
@@ -161,8 +164,51 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     "password",
                     default=get_previous_option(self.config_entry, "password"),
                 ): str,
+                vol.Required(
+                    "power_sensor",
+                    default=get_previous_option(self.config_entry, "power_sensor"),
+                ): int,
+                vol.Required(
+                    "consumption_price_sensor",
+                    default=get_previous_option(
+                        self.config_entry, "consumption_price_sensor"
+                    ),
+                ): int,
+                vol.Required(
+                    "production_price_sensor",
+                    default=get_previous_option(
+                        self.config_entry, "production_price_sensor"
+                    ),
+                ): int,
+                vol.Required(
+                    "soc_sensor",
+                    default=get_previous_option(self.config_entry, "soc_sensor"),
+                ): int,
+                vol.Required(
+                    "rm_discharge_sensor",
+                    default=get_previous_option(
+                        self.config_entry, "rm_discharge_sensor"
+                    ),
+                ): int,
+                vol.Required(
+                    "schedule_duration",
+                    default=get_previous_option(self.config_entry, "schedule_duration"),
+                ): str,
+                vol.Required(
+                    "soc_unit",
+                    default=get_previous_option(self.config_entry, "soc_unit"),
+                ): str,
+                vol.Required(
+                    "soc_min",
+                    default=get_previous_option(self.config_entry, "soc_min"),
+                ): float,
+                vol.Required(
+                    "soc_max",
+                    default=get_previous_option(self.config_entry, "soc_max"),
+                ): float,
             }
         )
+
         return self.async_show_form(
             step_id="init", data_schema=options_schema, errors=errors
         )
@@ -174,3 +220,20 @@ class CannotConnect(HomeAssistantError):
 
 class InvalidAuth(HomeAssistantError):
     """Error to indicate there is invalid auth."""
+
+
+def get_previous_option(config: ConfigEntry, option: str):
+    """Get default from previous options or otherwise from initial config."""
+    return config.options.get(option, config.data[option])
+
+
+def get_host_and_ssl_from_url(url: str) -> tuple[str, bool]:
+    """Get the host and ssl from the url."""
+    if url.startswith("http://"):
+        ssl = False
+        host = url.removeprefix("http://")
+    if url.startswith("https://"):
+        ssl = True
+        host = url.removeprefix("https://")
+
+    return host, ssl
