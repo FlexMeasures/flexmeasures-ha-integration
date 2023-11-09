@@ -16,7 +16,6 @@ jobs:
         uses: "hacs/action@main"
         with:
           category: "integration"
-          ignore: "archived brands description hacsjson images information issues topics"
 
   validate-hassfest:
     runs-on: "ubuntu-latest"
