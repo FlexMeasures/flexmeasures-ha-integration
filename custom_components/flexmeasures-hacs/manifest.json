@@ -1,5 +1,5 @@
 {
-  "domain": "flexmeasures",
+  "domain": "flexmeasures-hacs",
   "name": "FlexMeasures",
   "codeowners": ["@GustaafL"],
   "config_flow": true,
