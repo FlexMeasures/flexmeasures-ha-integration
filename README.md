@@ -1,10 +1,4 @@
----
-title: FlexMeasures
-description: Use FlexMeasures flexible energy asset in Home Assistant 
----
-
-
-
+#FlexMeasures
 
 The `flexmeasures` integration offers an integration with [FlexMeasures](https://flexmeasures.io/) instances to schedule flexible energy assets.
 
