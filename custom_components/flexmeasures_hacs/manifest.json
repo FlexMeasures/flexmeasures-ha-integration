@@ -4,7 +4,7 @@
   "codeowners": ["@GustaafL"],
   "config_flow": true,
   "dependencies": ["http"],
-  "documentation": "https://www.home-assistant.io/integrations/flexmeasures",  
+  "documentation": "https://github.com/FlexMeasures/flexmeasures-hacs#flexmeasures",  
   "homekit": {},
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/GustaafL/flexmeasures-hacs/issues",
