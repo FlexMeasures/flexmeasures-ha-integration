@@ -1,5 +1,5 @@
 {
-    "name": "FlexMeasures",
+    "name": "FlexMeasures for HACS",
     "homeassistant": "2023.9.0",
     "render_readme": true
 }
