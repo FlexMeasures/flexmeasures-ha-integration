@@ -1,6 +1,6 @@
 """Constants for the FlexMeasures integration."""
 
-DOMAIN = "flexmeasures"
+DOMAIN = "flexmeasures_hacs"
 WS_VIEW_URI = "/api/websocket_custom"
 WS_VIEW_NAME = "websocket_custom"
 
