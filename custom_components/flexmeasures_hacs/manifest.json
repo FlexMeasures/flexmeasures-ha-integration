@@ -1,7 +1,7 @@
 {
   "domain": "flexmeasures_hacs",
   "name": "FlexMeasures for HACS",
-  "codeowners": ["@GustaafL"],
+  "codeowners": ["@Flix6x"],
   "config_flow": true,
   "dependencies": ["http"],
   "documentation": "https://github.com/FlexMeasures/flexmeasures-hacs#flexmeasures",  
