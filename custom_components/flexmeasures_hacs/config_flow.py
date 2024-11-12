@@ -21,7 +21,7 @@ _LOGGER = logging.getLogger(__name__)
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(
-            "url", description={"suggested_value": "http://test2localhost:5000"}
+            "url", description={"suggested_value": "http://localhost:5000"}
         ): str,
         vol.Required(
             "username", description={"suggested_value": "toy-user@flexmeasures.io"}
