@@ -1,26 +1,31 @@
 """Fixtures for websocket tests."""
+
 from collections.abc import Coroutine, Generator
 from typing import Any, cast
 
 import pytest
 
-from homeassistant.components.flexmeasures.const import DOMAIN, WS_VIEW_URI
+from custom_components.flexmeasures_hacs.const import DOMAIN, WS_VIEW_URI
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.setup import async_setup_component
 
-from tests.common import MockConfigEntry
-from tests.typing import (
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.typing import (
     ClientSessionGenerator,
     MockHAClientWebSocket,
     WebSocketGenerator,
 )
 
 
+@pytest.fixture(autouse=True)
+def auto_enable_custom_integrations(enable_custom_integrations):
+    yield
+
+
 @pytest.fixture
 async def setup_fm_integration(hass: HomeAssistant):
     """FlexMeasures integration setup."""
-
     entry = MockConfigEntry(
         domain=DOMAIN,
         data={

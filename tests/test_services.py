@@ -6,12 +6,12 @@ from unittest.mock import patch
 import pytest
 from s2python.common import ControlType
 
-from homeassistant.components.flexmeasures.const import (
+from custom_components.flexmeasures_hacs.const import (
     DOMAIN,
     RESOLUTION,
     SERVICE_CHANGE_CONTROL_TYPE,
 )
-from homeassistant.components.flexmeasures.services import time_ceil
+from custom_components.flexmeasures_hacs.services import time_ceil
 from homeassistant.core import HomeAssistant
 import homeassistant.util.dt as dt_util
 from homeassistant.util.dt import parse_duration

@@ -1,6 +1,6 @@
 """Test websockets module of FlexMeasures integration."""
-# pytest ./tests/components/flexmeasures/ --cov=homeassistant.components.flexmeasures --cov-report term-missing -vv
 
+# pytest ./tests/components/flexmeasures/ --cov=homeassistant.components.flexmeasures --cov-report term-missing -vv
 
 from homeassistant.core import HomeAssistant
 

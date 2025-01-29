@@ -1,9 +1,10 @@
 """Test the FlexMeasures config flow."""
+
 from unittest.mock import patch
 
 from homeassistant import config_entries, data_entry_flow
-from homeassistant.components.flexmeasures.config_flow import SCHEMA
-from homeassistant.components.flexmeasures.const import DOMAIN
+from custom_components.flexmeasures_hacs.config_flow import SCHEMA
+from custom_components.flexmeasures_hacs.const import DOMAIN
 from homeassistant.core import HomeAssistant
 
 CONFIG = {
@@ -35,7 +36,7 @@ async def test_form(hass: HomeAssistant) -> None:
     with patch(
         "flexmeasures_client.FlexMeasuresClient.get_access_token",
     ) as mock_validate_input, patch(
-        "homeassistant.components.flexmeasures.async_setup_entry",
+        "custom_components.flexmeasures_hacs.async_setup_entry",
         return_value=True,
     ) as mock_setup_entry:
         result2 = await hass.config_entries.flow.async_configure(

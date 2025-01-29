@@ -1,7 +1,7 @@
 """Test initialization of FlexMeasures integration."""
 
-from homeassistant.components.flexmeasures.const import DOMAIN
-from homeassistant.components.flexmeasures.services import SERVICES
+from custom_components.flexmeasures_hacs.const import DOMAIN
+from custom_components.flexmeasures_hacs.services import SERVICES
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 
