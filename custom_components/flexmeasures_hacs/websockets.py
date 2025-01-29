@@ -1,19 +1,26 @@
 """View to accept incoming websocket connection."""
+
 from __future__ import annotations
 
 import asyncio
+from dataclasses import asdict
 import logging
 from typing import Any, Final
 
 import aiohttp
 from aiohttp import web
 from flexmeasures_client.s2.cem import CEM
-from flexmeasures_client.s2.control_types.FRBC.frbc_simple import FRBCSimple
+from flexmeasures_client.s2.control_types.FRBC.frbc_tunes import (
+    FillRateBasedControlTUNES,
+)
+from flexmeasures_client.s2.utils import get_unique_id
+from s2python.common import EnergyManagementRole, Handshake
 
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, WS_VIEW_NAME, WS_VIEW_URI
+from .control_types import FRBC_Config
 
 _WS_LOGGER: Final = logging.getLogger(f"{__name__}.connection")
 
@@ -25,10 +32,17 @@ class WebsocketAPIView(HomeAssistantView):
     url: str = WS_VIEW_URI
     requires_auth: bool = False
 
+    def __init__(self, entry) -> None:
+        """Initialize websocket view."""
+        super().__init__()
+        self.entry = entry
+
     async def get(self, request: web.Request) -> web.WebSocketResponse:
         """Handle an incoming websocket connection."""
 
-        return await WebSocketHandler(request.app["hass"], request).async_handle()
+        return await WebSocketHandler(
+            request.app["hass"], self.entry, request
+        ).async_handle()
 
 
 class WebSocketAdapter(logging.LoggerAdapter):
@@ -46,14 +60,16 @@ class WebSocketHandler:
 
     cem: CEM
 
-    def __init__(self, hass: HomeAssistant, request: web.Request) -> None:
+    def __init__(self, hass: HomeAssistant, entry, request: web.Request) -> None:
         """Initialize an active connection."""
         self.hass = hass
         self.request = request
-        self.wsock = web.WebSocketResponse(heartbeat=55)
+        self.entry = entry
+        self.wsock = web.WebSocketResponse(heartbeat=None)
 
         self.cem = CEM(fm_client=hass.data[DOMAIN]["fm_client"])
-        frbc = FRBCSimple(**hass.data[DOMAIN]["frbc_config"])
+        frbc_data: FRBC_Config = hass.data[DOMAIN]["frbc_config"]
+        frbc = FillRateBasedControlTUNES(**asdict(frbc_data))
         hass.data[DOMAIN]["cem"] = self.cem
         self.cem.register_control_type(frbc)
 
@@ -70,28 +86,41 @@ class WebSocketHandler:
 
             self._logger.debug(message)
 
-            await self.wsock.send_json(message)
+            try:
+                await self.wsock.send_json(message)
+            except ConnectionResetError:
+                await cem.close()
 
     async def _websocket_consumer(self):
         """Process incoming messages."""
         cem = self.cem
 
-        async for msg in self.wsock:
-            message = msg.json()
+        handshake_message = Handshake(
+            message_id=get_unique_id(),
+            role=EnergyManagementRole.CEM,
+            supported_protocol_versions=["0.1.0"],
+        )
+        await cem.send_message(handshake_message)
+        try:
+            async for msg in self.wsock:
+                message = msg.json()
 
-            self._logger.debug(message)
+                self._logger.debug(message)
+                self._logger.debug(msg.type)
 
-            if msg.type == aiohttp.WSMsgType.TEXT:
-                if msg.data == "close":
-                    cem.close()
-                    await self.wsock.close()
-                else:
-                    # process message
-                    # breakpoint()
-                    await cem.handle_message(message)
+                if msg.type == aiohttp.WSMsgType.TEXT:
+                    if msg.data == "close":
+                        await cem.close()
+                        await self.wsock.close()
+                    else:
+                        await cem.handle_message(message)
 
-            elif msg.type == aiohttp.WSMsgType.ERROR:
-                cem.close()
+                elif msg.type == aiohttp.WSMsgType.ERROR:
+                    await cem.close()
+        except Exception:  # pylint: disable=broad-exception-caught
+            self.entry.async_start_reauth(self.hass)
+        finally:
+            await cem.close()
 
     async def async_handle(self) -> web.WebSocketResponse:
         """Handle a websocket response."""
@@ -99,12 +128,17 @@ class WebSocketHandler:
         request = self.request
         wsock = self.wsock
 
-        await wsock.prepare(request)
+        try:
+            await wsock.prepare(request)
 
-        # create "parallel" tasks for the message producer and consumer
-        await asyncio.gather(
-            self._websocket_consumer(),
-            self._websocket_producer(),
-        )
+            # create "parallel" tasks for the message producer and consumer
+            await asyncio.gather(
+                self._websocket_consumer(),
+                self._websocket_producer(),
+            )
+
+        except ConnectionResetError:
+            await self.cem.close()
+            self.entry.async_start_reauth(self.hass)
 
         return wsock
