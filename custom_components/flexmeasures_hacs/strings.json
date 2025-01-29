@@ -9,19 +9,155 @@
           "power_sensor": "Power sensor",
           "consumption_price_sensor": "Consumption price sensor",
           "production_price_sensor": "Production price sensor",
-          "soc_sensor": "SOC sensor",
           "rm_discharge_sensor": "Resource Manager Discharge Sensor",
           "schedule_duration": "Schedule Duration",
           "soc_unit": "SOC unit",
           "soc_min": "Minimum SOC",
-          "soc_max": "Maximum SOC"
+          "soc_max": "Maximum SOC",
+          "soc_minima_sensor_id": "soc_minima_sensor_id",
+          "soc_maxima_sensor_id": "soc_maxima_sensor_id",
+          "fill_level_sensor_id": "fill_level_sensor_id",
+          "fill_rate_sensor_id": "fill_rate_sensor_id",
+          "usage_forecast_sensor_id": "usage_forecast_sensor_id",
+          "thp_fill_rate_sensor_id": "thp_fill_rate_sensor_id",
+          "thp_efficiency_sensor_id": "thp_efficiency_sensor_id",
+          "nes_fill_rate_sensor_id": "nes_fill_rate_sensor_id",
+          "nes_efficiency_sensor_id": "nes_efficiency_sensor_id"
+        },
+        "data_description": {
+          "host": "The URL of the FlexMeasures instance.",
+          "username": "The email to log in to the FlexMeasures instance.",
+          "password": "The password to log in to the FlexMeasures instance.",
+          "power_sensor": "The sensor that provides the power data.",
+          "consumption_price_sensor": "The sensor that provides the consumption price data.",
+          "production_price_sensor": "The sensor that provides the production price data. Can be the same as the consumption price sensor.",
+          "rm_discharge_sensor": "The sensor that provides the resource manager discharge data.",
+          "schedule_duration": "The duration of the schedule in minutes.",
+          "soc_unit": "The unit of the state of charge.",
+          "soc_min": "The minimum state of charge.",
+          "soc_max": "The maximum state of charge.",
+          "soc_minima_sensor_id": "Minimum SOC sensor ID as given by the different FRBC.StorageDescription messages.",
+          "soc_maxima_sensor_id": "Maximum SOC sensor ID as given by the different FRBC.StorageDescription messages.",
+          "fill_level_sensor_id": "Fill level sensor ID of the NES heat storage.",
+          "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
+          "usage_forecast_sensor_id": "Usage Forecast sensor ID.",
+          "thp_fill_rate_sensor_id": "Fill rate sensor ID of the Tarnoc Heat Pump.",
+          "thp_efficiency_sensor_id": "Tarnoc heat pump coeffient of performance (Thermal Power / Electrical Power).",
+          "nes_fill_rate_sensor_id": "Fill rate sensor ID of the Nestore hot water storage internal thermal resistor.",
+          "nes_efficiency_sensor_id": "Nestore internal resistor coeffient of performance (Thermal Power / Electrical Power)."
+        }
+      },
+      "reauth_confirm": {
+        "data": {
+          "host": "[%key:common::config_flow::data::host%]",
+          "username": "[%key:common::config_flow::data::username%]",
+          "password": "[%key:common::config_flow::data::password%]",
+          "power_sensor": "Power sensor",
+          "consumption_price_sensor": "Consumption price sensor",
+          "production_price_sensor": "Production price sensor",
+          "rm_discharge_sensor": "Resource Manager Discharge Sensor",
+          "schedule_duration": "Schedule Duration",
+          "soc_unit": "SOC unit",
+          "soc_min": "Minimum SOC",
+          "soc_max": "Maximum SOC",
+          "soc_minima_sensor_id": "soc_minima_sensor_id",
+          "soc_maxima_sensor_id": "soc_maxima_sensor_id",
+          "fill_level_sensor_id": "fill_level_sensor_id",
+          "fill_rate_sensor_id": "fill_rate_sensor_id",
+          "usage_forecast_sensor_id": "usage_forecast_sensor_id",
+          "thp_fill_rate_sensor_id": "thp_fill_rate_sensor_id",
+          "thp_efficiency_sensor_id": "thp_efficiency_sensor_id",
+          "nes_fill_rate_sensor_id": "nes_fill_rate_sensor_id",
+          "nes_efficiency_sensor_id": "nes_efficiency_sensor_id"
+        },
+        "data_description": {
+          "host": "The URL of the FlexMeasures instance.",
+          "username": "The email to log in to the FlexMeasures instance.",
+          "password": "The password to log in to the FlexMeasures instance.",
+          "power_sensor": "The sensor that provides the power data.",
+          "consumption_price_sensor": "The sensor that provides the consumption price data.",
+          "production_price_sensor": "The sensor that provides the production price data. Can be the same as the consumption price sensor.",
+          "rm_discharge_sensor": "The sensor that provides the resource manager discharge data.",
+          "schedule_duration": "The duration of the schedule in minutes.",
+          "soc_unit": "The unit of the state of charge.",
+          "soc_min": "The minimum state of charge.",
+          "soc_max": "The maximum state of charge.",
+          "soc_minima_sensor_id": "Minimum SOC sensor ID as given by the different FRBC.StorageDescription messages.",
+          "soc_maxima_sensor_id": "Maximum SOC sensor ID as given by the different FRBC.StorageDescription messages.",
+          "fill_level_sensor_id": "Fill level sensor ID of the NES heat storage.",
+          "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
+          "usage_forecast_sensor_id": "Usage Forecast sensor ID.",
+          "thp_fill_rate_sensor_id": "Fill rate sensor ID of the Tarnoc Heat Pump.",
+          "thp_efficiency_sensor_id": "Tarnoc heat pump coeffient of performance (Thermal Power / Electrical Power).",
+          "nes_fill_rate_sensor_id": "Fill rate sensor ID of the Nestore hot water storage internal thermal resistor.",
+          "nes_efficiency_sensor_id": "Nestore internal resistor coeffient of performance (Thermal Power / Electrical Power)."
         }
       }
     },
     "error": {
       "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
       "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
-      "unknown": "[%key:common::config_flow::error::unknown%]"
+      "unknown": "[%key:common::config_flow::error::unknown%]",
+      "invalid_email": "Invalid email"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "host": "[%key:common::config_flow::data::host%]",
+          "username": "[%key:common::config_flow::data::username%]",
+          "password": "[%key:common::config_flow::data::password%]",
+          "power_sensor": "Power sensor",
+          "consumption_price_sensor": "Consumption price sensor",
+          "production_price_sensor": "Production price sensor",
+          "rm_discharge_sensor": "Resource Manager Discharge Sensor",
+          "schedule_duration": "Schedule Duration",
+          "soc_unit": "SOC unit",
+          "soc_min": "Minimum SOC",
+          "soc_max": "Maximum SOC",
+          "soc_minima_sensor_id": "soc_minima_sensor_id",
+          "soc_maxima_sensor_id": "soc_maxima_sensor_id",
+          "fill_level_sensor_id": "fill_level_sensor_id",
+          "fill_rate_sensor_id": "fill_rate_sensor_id",
+          "usage_forecast_sensor_id": "usage_forecast_sensor_id",
+          "thp_fill_rate_sensor_id": "thp_fill_rate_sensor_id",
+          "thp_efficiency_sensor_id": "thp_efficiency_sensor_id",
+          "nes_fill_rate_sensor_id": "nes_fill_rate_sensor_id",
+          "nes_efficiency_sensor_id": "nes_efficiency_sensor_id"
+        },
+        "data_description": {
+          "host": "The URL of the FlexMeasures instance.",
+          "username": "The email to log in to the FlexMeasures instance.",
+          "password": "The password to log in to the FlexMeasures instance.",
+          "power_sensor": "The sensor that provides the power data.",
+          "consumption_price_sensor": "The sensor that provides the consumption price data.",
+          "production_price_sensor": "The sensor that provides the production price data. Can be the same as the consumption price sensor.",
+          "rm_discharge_sensor": "The sensor that provides the resource manager discharge data.",
+          "schedule_duration": "The duration of the schedule in minutes.",
+          "soc_unit": "The unit of the state of charge.",
+          "soc_min": "The minimum state of charge.",
+          "soc_max": "The maximum state of charge.",
+          "soc_minima_sensor_id": "Minimum SOC sensor ID as given by the different FRBC.StorageDescription messages.",
+          "soc_maxima_sensor_id": "Maximum SOC sensor ID as given by the different FRBC.StorageDescription messages.",
+          "fill_level_sensor_id": "Fill level sensor ID of the NES heat storage.",
+          "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
+          "usage_forecast_sensor_id": "Usage Forecast sensor ID.",
+          "thp_fill_rate_sensor_id": "Fill rate sensor ID of the Tarnoc Heat Pump.",
+          "thp_efficiency_sensor_id": "Tarnoc heat pump coeffient of performance (Thermal Power / Electrical Power).",
+          "nes_fill_rate_sensor_id": "Fill rate sensor ID of the Nestore hot water storage internal thermal resistor.",
+          "nes_efficiency_sensor_id": "Nestore internal resistor coeffient of performance (Thermal Power / Electrical Power)."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
+      "unknown": "[%key:common::config_flow::error::unknown%]",
+      "invalid_email": "Invalid email"
     },
     "abort": {
       "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
