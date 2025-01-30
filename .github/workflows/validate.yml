@@ -52,7 +52,7 @@ jobs:
         run: pip install -r requirements.test.txt
 
       - name: Install flexmeasures client
-        run: pip install flexmeasures-client==0.13.0
+        run: pip install flexmeasures-client==0.3.2
 
       - name: Run all tests except those marked to be skipped by GitHub AND record coverage
         run: pytest
