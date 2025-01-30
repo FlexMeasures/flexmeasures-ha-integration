@@ -2,7 +2,6 @@ name: Validate
 
 on:
   push:
-  pull_request:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
@@ -50,7 +49,7 @@ jobs:
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 
       - name: Install test requirements
-        run: pip install requirements.test.txt
+        run: pip install -r requirements.test.txt
 
       - name: Install flexmeasures client
         run: pip install flexmeasures-client==0.13.0
