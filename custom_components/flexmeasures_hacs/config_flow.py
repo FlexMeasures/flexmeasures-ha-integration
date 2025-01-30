@@ -27,31 +27,31 @@ SCHEMA = vol.Schema(
         vol.Required("url", default="https://seita.energy"): str,
         vol.Required(
             "username",
-            default="victor@seita.nl",
+            default="example@example.com",
         ): str,
-        vol.Required("password", default="8^AT9zw'+D\"Ung,"): str,
-        vol.Required("power_sensor", default=5): int,
-        vol.Required("soc_minima_sensor_id", default=5): int,
-        vol.Required("soc_maxima_sensor_id", default=5): int,
-        vol.Required("fill_level_sensor_id", default=5): int,
-        vol.Required("fill_rate_sensor_id", default=5): int,
-        vol.Required("usage_forecast_sensor_id", default=5): int,
-        vol.Required("thp_fill_rate_sensor_id", default=5): int,
-        vol.Required("thp_efficiency_sensor_id", default=5): int,
-        vol.Required("nes_fill_rate_sensor_id", default=5): int,
-        vol.Required("nes_efficiency_sensor_id", default=5): int,
-        vol.Required("rm_discharge_sensor_id", default=5): int,
-        vol.Required("schedule_duration", default="PT24H"): str,
-        vol.Required(
+        vol.Required("password", default="password"): str,
+        vol.Optional("power_sensor", default=5): int,
+        vol.Optional("soc_minima_sensor_id", default=5): int,
+        vol.Optional("soc_maxima_sensor_id", default=5): int,
+        vol.Optional("fill_level_sensor_id", default=5): int,
+        vol.Optional("fill_rate_sensor_id", default=5): int,
+        vol.Optional("usage_forecast_sensor_id", default=5): int,
+        vol.Optional("thp_fill_rate_sensor_id", default=5): int,
+        vol.Optional("thp_efficiency_sensor_id", default=5): int,
+        vol.Optional("nes_fill_rate_sensor_id", default=5): int,
+        vol.Optional("nes_efficiency_sensor_id", default=5): int,
+        vol.Optional("rm_discharge_sensor_id", default=5): int,
+        vol.Optional("schedule_duration", default="PT24H"): str,
+        vol.Optional(
             "consumption_price_sensor", description={"suggested_value": 2}
         ): int,
-        vol.Required(
+        vol.Optional(
             "production_price_sensor", description={"suggested_value": 2}
         ): int,
-        vol.Required("soc_sensor", description={"suggested_value": 4}): int,
-        vol.Required("soc_unit", default="kWh"): str,
-        vol.Required("soc_min", default=10.1): float,
-        vol.Required("soc_max", default=1.1): float,
+        vol.Optional("soc_sensor", description={"suggested_value": 4}): int,
+        vol.Optional("soc_unit", default="kWh"): str,
+        vol.Optional("soc_min", default=10.1): float,
+        vol.Optional("soc_max", default=1.1): float,
     }
 )
 
