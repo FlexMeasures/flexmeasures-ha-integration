@@ -22,3 +22,41 @@ jobs:
     steps:
         - uses: "actions/checkout@v4"
         - uses: "home-assistant/actions/hassfest@master"
+
+  check:
+    runs-on: ubuntu-latest
+    name: Check (on Python 3.11)
+    steps:
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - uses: actions/checkout@v3
+      - uses: pre-commit/action@v3.0.0
+
+  test:
+    needs: check
+    runs-on: ubuntu-20.04
+    name: "Test (on Python 3.11"
+    steps:
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Check out src from Git
+        uses: actions/checkout@v3
+      - name: Get history and tags for SCM versioning to work
+        run: |
+          git fetch --prune --unshallow
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
+      - name: Install test requirements
+        run: pip install requirements.test.txt
+
+      - name: Install flexmeasures client
+        run: pip install flexmeasures-client==0.13.0
+
+      - name: Run all tests except those marked to be skipped by GitHub AND record coverage
+        run: pytest
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
