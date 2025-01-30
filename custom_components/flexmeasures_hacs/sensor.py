@@ -1,4 +1,5 @@
 """Definition of the sensors of the FlexMeasures integration."""
+
 from __future__ import annotations
 
 import logging
