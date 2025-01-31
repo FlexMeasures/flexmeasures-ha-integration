@@ -5,10 +5,12 @@
 from homeassistant.core import HomeAssistant
 
 
-async def test_producer_consumer(
+async def test_cem_processes_websocket_msg(
     hass: HomeAssistant, setup_fm_integration, fm_websocket_client
 ):
-    """Test websocket connection."""
+    """
+    Test that the CEM gets a S2 message sent via WebSockets through HomeAssistant
+    """
     message = {
         "message_id": "2bdec96b-be3b-4ba9-afa0-c4a0632cced3",
         "role": "RM",
