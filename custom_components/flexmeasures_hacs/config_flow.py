@@ -11,7 +11,7 @@ import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import async_get_hass
-from homeassistant.data_entry_flow import FlowResult
+from homeassistant.data_entry_flow import FlowResult, section
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.schema_config_entry_flow import (
     SchemaCommonFlowHandler,
@@ -22,15 +22,8 @@ from homeassistant.helpers.schema_config_entry_flow import (
 
 from .const import DOMAIN
 
-SCHEMA = vol.Schema(
+S2_SCHEMA = vol.Schema(
     {
-        vol.Required("url", default="https://seita.energy"): str,
-        vol.Required(
-            "username",
-            default="example@example.com",
-        ): str,
-        vol.Required("password", default="password"): str,
-        vol.Optional("power_sensor", default=5): int,
         vol.Optional("soc_minima_sensor_id", default=5): int,
         vol.Optional("soc_maxima_sensor_id", default=5): int,
         vol.Optional("fill_level_sensor_id", default=5): int,
@@ -41,6 +34,18 @@ SCHEMA = vol.Schema(
         vol.Optional("nes_fill_rate_sensor_id", default=5): int,
         vol.Optional("nes_efficiency_sensor_id", default=5): int,
         vol.Optional("rm_discharge_sensor_id", default=5): int,
+    }
+)
+
+SCHEMA = vol.Schema(
+    {
+        vol.Required("url", default="https://seita.energy"): str,
+        vol.Required(
+            "username",
+            default="example@example.com",
+        ): str,
+        vol.Required("password", default="password"): str,
+        vol.Optional("power_sensor", default=5): int,
         vol.Optional("schedule_duration", default="PT24H"): str,
         vol.Optional(
             "consumption_price_sensor", description={"suggested_value": 2}
@@ -52,6 +57,7 @@ SCHEMA = vol.Schema(
         vol.Optional("soc_unit", default="kWh"): str,
         vol.Optional("soc_min", default=10.1): float,
         vol.Optional("soc_max", default=1.1): float,
+        vol.Optional("s2"): section(S2_SCHEMA, {"collapsed": True}),
     }
 )
 
@@ -76,7 +82,7 @@ async def validate_input(
 ) -> dict:
     """Validate if the user input allows us to connect.
 
-    Data has the keys from CONFIG_SCHEMA with values provided by the user.
+    Data has the keys from SCHEMA with values provided by the user.
     """
 
     host, ssl = get_host_and_ssl_from_url(data["url"])
