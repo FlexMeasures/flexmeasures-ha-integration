@@ -24,16 +24,16 @@ from .const import DOMAIN
 
 S2_SCHEMA = vol.Schema(
     {
-        vol.Optional("soc_minima_sensor_id", default=5): int,
-        vol.Optional("soc_maxima_sensor_id", default=5): int,
-        vol.Optional("fill_level_sensor_id", default=5): int,
-        vol.Optional("fill_rate_sensor_id", default=5): int,
-        vol.Optional("usage_forecast_sensor_id", default=5): int,
-        vol.Optional("thp_fill_rate_sensor_id", default=5): int,
-        vol.Optional("thp_efficiency_sensor_id", default=5): int,
-        vol.Optional("nes_fill_rate_sensor_id", default=5): int,
-        vol.Optional("nes_efficiency_sensor_id", default=5): int,
-        vol.Optional("rm_discharge_sensor_id", default=5): int,
+        vol.Optional("soc_minima_sensor_id", default=218): int,
+        vol.Optional("soc_maxima_sensor_id", default=217): int,
+        vol.Optional("fill_level_sensor_id", default=215): int,
+        vol.Optional("fill_rate_sensor_id", default=214): int,
+        vol.Optional("usage_forecast_sensor_id", default=229): int,
+        vol.Optional("thp_fill_rate_sensor_id", default=226): int,
+        vol.Optional("thp_efficiency_sensor_id", default=225): int,
+        vol.Optional("nes_fill_rate_sensor_id", default=222): int,
+        vol.Optional("nes_efficiency_sensor_id", default=221): int,
+        vol.Optional("rm_discharge_sensor_id", default=213): int,
     }
 )
 
