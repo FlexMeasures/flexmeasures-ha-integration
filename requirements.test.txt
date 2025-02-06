@@ -1,4 +1,4 @@
 pytest
 pytest-cov
-pytest-homeassistant-custom-component==0.13.109 # fixing version, otherwise it will start installing all HA versions...
-# flexmeasures-client==0.3.2 # needs to be installed manually afterwards. It depends on pydantic v2 while pytest-homeassistant-custom-component uses pydantic v1
+pytest-homeassistant-custom-component==0.13.209 # fixing version, otherwise it will start installing all HA versions...
+flexmeasures-client[s2]

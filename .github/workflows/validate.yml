@@ -24,22 +24,22 @@ jobs:
 
   check:
     runs-on: ubuntu-latest
-    name: Check (on Python 3.11)
+    name: Check (on Python 3.12)
     steps:
       - uses: actions/setup-python@v4
         with:
-          python-version: 3.11
+          python-version: 3.12
       - uses: actions/checkout@v3
       - uses: pre-commit/action@v3.0.0
 
   test:
     needs: check
     runs-on: ubuntu-20.04
-    name: "Test (on Python 3.11"
+    name: "Test (on Python 3.12)"
     steps:
       - uses: actions/setup-python@v4
         with:
-          python-version: 3.11
+          python-version: 3.12
 
       - name: Check out src from Git
         uses: actions/checkout@v3
@@ -50,9 +50,6 @@ jobs:
 
       - name: Install test requirements
         run: pip install -r requirements.test.txt
-
-      - name: Install flexmeasures client
-        run: pip install "flexmeasures-client[s2]==0.3.3"
 
       - name: Run all tests except those marked to be skipped by GitHub AND record coverage
         run: pytest
