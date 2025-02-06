@@ -179,6 +179,12 @@ def time_ceil(time, delta, epoch=None):
     return time
 
 
-def get_from_option_or_config(key: str, entry: ConfigEntry):
+def get_from_option_or_config(key: str, entry: ConfigEntry, section: str | None = None):
     """Get value from the options and, if not found, return the config value."""
+
+    if section:
+        return entry.options.get(section, {}).get(
+            key, entry.data.get(section, {}).get(key)
+        )
+
     return entry.options.get(key, entry.data.get(key))
