@@ -22,18 +22,45 @@ from homeassistant.helpers.schema_config_entry_flow import (
 
 from .const import DOMAIN
 
+
 S2_SCHEMA = vol.Schema(
     {
-        vol.Optional("soc_minima_sensor_id", default=218): int,
-        vol.Optional("soc_maxima_sensor_id", default=217): int,
-        vol.Optional("fill_level_sensor_id", default=215): int,
-        vol.Optional("fill_rate_sensor_id", default=214): int,
-        vol.Optional("usage_forecast_sensor_id", default=229): int,
-        vol.Optional("thp_fill_rate_sensor_id", default=226): int,
-        vol.Optional("thp_efficiency_sensor_id", default=225): int,
-        vol.Optional("nes_fill_rate_sensor_id", default=222): int,
-        vol.Optional("nes_efficiency_sensor_id", default=221): int,
-        vol.Optional("rm_discharge_sensor_id", default=213): int,
+        vol.Optional(
+            "soc_minima_sensor_id", default=218, description={"suggested_value": 218}
+        ): int,
+        vol.Optional(
+            "soc_maxima_sensor_id", default=217, description={"suggested_value": 217}
+        ): int,
+        vol.Optional(
+            "fill_level_sensor_id", default=215, description={"suggested_value": 215}
+        ): int,
+        vol.Optional(
+            "fill_rate_sensor_id", default=214, description={"suggested_value": 214}
+        ): int,
+        vol.Optional(
+            "usage_forecast_sensor_id",
+            default=229,
+            description={"suggested_value": 229},
+        ): int,
+        vol.Optional(
+            "thp_fill_rate_sensor_id", default=226, description={"suggested_value": 226}
+        ): int,
+        vol.Optional(
+            "thp_efficiency_sensor_id",
+            default=225,
+            description={"suggested_value": 225},
+        ): int,
+        vol.Optional(
+            "nes_fill_rate_sensor_id", default=222, description={"suggested_value": 222}
+        ): int,
+        vol.Optional(
+            "nes_efficiency_sensor_id",
+            default=221,
+            description={"suggested_value": 221},
+        ): int,
+        vol.Optional(
+            "rm_discharge_sensor_id", default=213, description={"suggested_value": 213}
+        ): int,
     }
 )
 
@@ -129,6 +156,8 @@ class ConfigFlowHandler(SchemaConfigFlowHandler, domain=DOMAIN):
     options_flow = OPTIONS_FLOW
 
     reauth_entry: ConfigEntry
+
+    VERSION = 2
 
     def async_config_entry_title(self, options: Mapping[str, Any]) -> str:
         """Return config entry title."""
