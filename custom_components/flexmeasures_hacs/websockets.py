@@ -98,7 +98,7 @@ class WebSocketHandler:
         handshake_message = Handshake(
             message_id=get_unique_id(),
             role=EnergyManagementRole.CEM,
-            supported_protocol_versions=["0.1.0"],
+            supported_protocol_versions=[cem.__version__],
         )
         await cem.send_message(handshake_message)
         try:
