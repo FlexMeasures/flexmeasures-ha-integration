@@ -76,7 +76,7 @@ async def test_form(hass: HomeAssistant) -> None:
 
 
 async def test_migration(hass: HomeAssistant) -> None:
-    """Test migrating v1 config to v1 config to include S2_CONFIG in options."""
+    """Test migrating v1 config to v2 config to include S2_CONFIG in options."""
 
     # Simulate an old entry with CONFIG in data and some options
     old_entry = MockConfigEntry(
