@@ -6,24 +6,137 @@
         "error": {
             "cannot_connect": "Failed to connect",
             "invalid_auth": "Invalid authentication",
+            "invalid_email": "Invalid email",
             "unknown": "Unexpected error"
         },
         "step": {
-            "user": {
+            "reauth_confirm": {
                 "data": {
                     "consumption_price_sensor": "Consumption price sensor",
                     "host": "Host",
                     "password": "Password",
                     "power_sensor": "Power sensor",
                     "production_price_sensor": "Production price sensor",
+                    "schedule_duration": "Schedule Duration",
+                    "soc_max": "Maximum SOC",
+                    "soc_maxima_sensor_id": "soc_maxima_sensor_id",
+                    "soc_min": "Minimum SOC",
+                    "soc_minima_sensor_id": "soc_minima_sensor_id",
+                    "soc_unit": "SOC unit",
+                    "username": "Username"
+                },
+                "data_description": {
+                    "consumption_price_sensor": "The sensor that provides the consumption price data.",
+                    "host": "The URL of the FlexMeasures instance.",
+                    "password": "The password to log in to the FlexMeasures instance.",
+                    "power_sensor": "The sensor that provides the power data.",
+                    "production_price_sensor": "The sensor that provides the production price data. Can be the same as the consumption price sensor.",
+                    "schedule_duration": "The duration of the schedule in minutes.",
+                    "soc_max": "The maximum state of charge.",
+                    "soc_maxima_sensor_id": "soc_maxima_sensor_id",
+                    "soc_min": "The minimum state of charge.",
+                    "soc_minima_sensor_id": "soc_minima_sensor_id",
+                    "soc_unit": "The unit of the state of charge.",
+                    "username": "The email to log in to the FlexMeasures instance."
+                },
+                "sections": {
+                  "s2": {
+                      "name": "S2",
+                      "description": "Optional parameters to interface to a S2 resource manager",
+                      "data": {
+                        "fill_level_sensor_id": "fill_level_sensor_id",
+                        "fill_rate_sensor_id": "fill_rate_sensor_id",
+                        "usage_forecast_sensor_id": "usage_forecast_sensor_id",
+                        "thp_fill_rate_sensor_id": "thp_fill_rate_sensor_id",
+                        "thp_efficiency_sensor_id": "thp_efficiency_sensor_id",
+                        "nes_fill_rate_sensor_id": "nes_fill_rate_sensor_id",
+                        "nes_efficiency_sensor_id": "nes_efficiency_sensor_id",
+                        "rm_discharge_sensor": "Resource Manager Discharge Sensor"
+                      },
+                      "data_description": {
+                        "fill_level_sensor_id": "Fill level sensor ID of the NES heat storage.",
+                        "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
+                        "usage_forecast_sensor_id": "Usage Forecast sensor ID.",
+                        "thp_fill_rate_sensor_id": "Fill rate sensor ID of the Tarnoc Heat Pump.",
+                        "thp_efficiency_sensor_id": "Tarnoc heat pump coeffient of performance (Thermal Power / Electrical Power).",
+                        "nes_fill_rate_sensor_id": "Fill rate sensor ID of the Nestore hot water storage internal thermal resistor.",
+                        "nes_efficiency_sensor_id": "Nestore internal resistor coeffient of performance (Thermal Power / Electrical Power).",
+                        "rm_discharge_sensor": "The sensor that provides the resource manager discharge data."
+                      }
+                  }
+                }
+            },
+            "user": {
+                "data": {
+                    "consumption_price_sensor": "Consumption price sensor",
+                    "fill_level_sensor_id": "fill_level_sensor_id",
+                    "fill_rate_sensor_id": "fill_rate_sensor_id",
+                    "host": "Host",
+                    "nes_efficiency_sensor_id": "nes_efficiency_sensor_id",
+                    "nes_fill_rate_sensor_id": "nes_fill_rate_sensor_id",
+                    "password": "Password",
+                    "power_sensor": "Power sensor",
+                    "production_price_sensor": "Production price sensor",
                     "rm_discharge_sensor": "Resource Manager Discharge Sensor",
                     "schedule_duration": "Schedule Duration",
                     "soc_max": "Maximum SOC",
+                    "soc_maxima_sensor_id": "soc_maxima_sensor_id",
                     "soc_min": "Minimum SOC",
-                    "soc_sensor": "SOC sensor",
+                    "soc_minima_sensor_id": "soc_minima_sensor_id",
                     "soc_unit": "SOC unit",
+                    "thp_efficiency_sensor_id": "thp_efficiency_sensor_id",
+                    "thp_fill_rate_sensor_id": "thp_fill_rate_sensor_id",
+                    "usage_forecast_sensor_id": "usage_forecast_sensor_id",
                     "username": "Username"
-                }
+                },
+                "data_description": {
+                    "consumption_price_sensor": "The sensor that provides the consumption price data.",
+                    "fill_level_sensor_id": "fill_level_sensor_id",
+                    "fill_rate_sensor_id": "fill_rate_sensor_id",
+                    "host": "The URL of the FlexMeasures instance.",
+                    "nes_efficiency_sensor_id": "nes_efficiency_sensor_id",
+                    "nes_fill_rate_sensor_id": "nes_fill_rate_sensor_id",
+                    "password": "The password to log in to the FlexMeasures instance.",
+                    "power_sensor": "The sensor that provides the power data.",
+                    "production_price_sensor": "The sensor that provides the production price data. Can be the same as the consumption price sensor.",
+                    "rm_discharge_sensor": "The sensor that provides the resource manager discharge data.",
+                    "schedule_duration": "The duration of the schedule in minutes.",
+                    "soc_max": "The maximum state of charge.",
+                    "soc_maxima_sensor_id": "soc_maxima_sensor_id",
+                    "soc_min": "The minimum state of charge.",
+                    "soc_minima_sensor_id": "soc_minima_sensor_id",
+                    "soc_unit": "The unit of the state of charge.",
+                    "thp_efficiency_sensor_id": "thp_efficiency_sensor_id",
+                    "thp_fill_rate_sensor_id": "thp_fill_rate_sensor_id",
+                    "usage_forecast_sensor_id": "usage_forecast_sensor_id",
+                    "username": "The email to log in to the FlexMeasures instance."
+                },
+                "sections": {
+              "s2": {
+                  "name": "S2",
+                  "description": "Optional parameters to interface to a S2 resource manager",
+                  "data": {
+                    "fill_level_sensor_id": "fill_level_sensor_id",
+                    "fill_rate_sensor_id": "fill_rate_sensor_id",
+                    "usage_forecast_sensor_id": "usage_forecast_sensor_id",
+                    "thp_fill_rate_sensor_id": "thp_fill_rate_sensor_id",
+                    "thp_efficiency_sensor_id": "thp_efficiency_sensor_id",
+                    "nes_fill_rate_sensor_id": "nes_fill_rate_sensor_id",
+                    "nes_efficiency_sensor_id": "nes_efficiency_sensor_id",
+                    "rm_discharge_sensor": "Resource Manager Discharge Sensor"
+                  },
+                  "data_description": {
+                    "fill_level_sensor_id": "Fill level sensor ID of the NES heat storage.",
+                    "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
+                    "usage_forecast_sensor_id": "Usage Forecast sensor ID.",
+                    "thp_fill_rate_sensor_id": "Fill rate sensor ID of the Tarnoc Heat Pump.",
+                    "thp_efficiency_sensor_id": "Tarnoc heat pump coeffient of performance (Thermal Power / Electrical Power).",
+                    "nes_fill_rate_sensor_id": "Fill rate sensor ID of the Nestore hot water storage internal thermal resistor.",
+                    "nes_efficiency_sensor_id": "Nestore internal resistor coeffient of performance (Thermal Power / Electrical Power).",
+                    "rm_discharge_sensor": "The sensor that provides the resource manager discharge data."
+                  }
+              }
+          }
             }
         }
     },
@@ -31,6 +144,92 @@
         "sensor": {
             "power": {
                 "name": "FlexMeasures power sensor"
+            }
+        }
+    },
+    "options": {
+        "abort": {
+            "already_configured": "Device is already configured"
+        },
+        "error": {
+            "cannot_connect": "Failed to connect",
+            "invalid_auth": "Invalid authentication",
+            "invalid_email": "Invalid email",
+            "unknown": "Unexpected error"
+        },
+        "step": {
+            "init": {
+                "data": {
+                    "consumption_price_sensor": "Consumption price sensor",
+                    "fill_level_sensor_id": "fill_level_sensor_id",
+                    "fill_rate_sensor_id": "fill_rate_sensor_id",
+                    "host": "Host",
+                    "nes_efficiency_sensor_id": "nes_efficiency_sensor_id",
+                    "nes_fill_rate_sensor_id": "nes_fill_rate_sensor_id",
+                    "password": "Password",
+                    "power_sensor": "Power sensor",
+                    "production_price_sensor": "Production price sensor",
+                    "rm_discharge_sensor": "Resource Manager Discharge Sensor",
+                    "schedule_duration": "Schedule Duration",
+                    "soc_max": "Maximum SOC",
+                    "soc_maxima_sensor_id": "soc_maxima_sensor_id",
+                    "soc_min": "Minimum SOC",
+                    "soc_minima_sensor_id": "soc_minima_sensor_id",
+                    "soc_unit": "SOC unit",
+                    "thp_efficiency_sensor_id": "thp_efficiency_sensor_id",
+                    "thp_fill_rate_sensor_id": "thp_fill_rate_sensor_id",
+                    "usage_forecast_sensor_id": "usage_forecast_sensor_id",
+                    "username": "Username"
+                },
+                "data_description": {
+                    "consumption_price_sensor": "The sensor that provides the consumption price data.",
+                    "fill_level_sensor_id": "fill_level_sensor_id",
+                    "fill_rate_sensor_id": "fill_rate_sensor_id",
+                    "host": "The URL of the FlexMeasures instance.",
+                    "nes_efficiency_sensor_id": "nes_efficiency_sensor_id",
+                    "nes_fill_rate_sensor_id": "nes_fill_rate_sensor_id",
+                    "password": "The password to log in to the FlexMeasures instance.",
+                    "power_sensor": "The sensor that provides the power data.",
+                    "production_price_sensor": "The sensor that provides the production price data. Can be the same as the consumption price sensor.",
+                    "rm_discharge_sensor": "The sensor that provides the resource manager discharge data.",
+                    "schedule_duration": "The duration of the schedule in minutes.",
+                    "soc_max": "The maximum state of charge.",
+                    "soc_maxima_sensor_id": "soc_maxima_sensor_id",
+                    "soc_min": "The minimum state of charge.",
+                    "soc_minima_sensor_id": "soc_minima_sensor_id",
+                    "soc_unit": "The unit of the state of charge.",
+                    "thp_efficiency_sensor_id": "thp_efficiency_sensor_id",
+                    "thp_fill_rate_sensor_id": "thp_fill_rate_sensor_id",
+                    "usage_forecast_sensor_id": "usage_forecast_sensor_id",
+                    "username": "The email to log in to the FlexMeasures instance."
+                },
+                "sections": {
+              "s2": {
+                  "name": "S2",
+                  "description": "Optional parameters to interface to a S2 resource manager",
+                  "data": {
+                    "fill_level_sensor_id": "fill_level_sensor_id",
+                    "fill_rate_sensor_id": "fill_rate_sensor_id",
+                    "usage_forecast_sensor_id": "usage_forecast_sensor_id",
+                    "thp_fill_rate_sensor_id": "thp_fill_rate_sensor_id",
+                    "thp_efficiency_sensor_id": "thp_efficiency_sensor_id",
+                    "nes_fill_rate_sensor_id": "nes_fill_rate_sensor_id",
+                    "nes_efficiency_sensor_id": "nes_efficiency_sensor_id",
+                    "rm_discharge_sensor": "Resource Manager Discharge Sensor"
+                  },
+                  "data_description": {
+                    "fill_level_sensor_id": "Fill level sensor ID of the NES heat storage.",
+                    "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
+                    "usage_forecast_sensor_id": "Usage Forecast sensor ID.",
+                    "thp_fill_rate_sensor_id": "Fill rate sensor ID of the Tarnoc Heat Pump.",
+                    "thp_efficiency_sensor_id": "Tarnoc heat pump coeffient of performance (Thermal Power / Electrical Power).",
+                    "nes_fill_rate_sensor_id": "Fill rate sensor ID of the Nestore hot water storage internal thermal resistor.",
+                    "nes_efficiency_sensor_id": "Nestore internal resistor coeffient of performance (Thermal Power / Electrical Power).",
+                    "rm_discharge_sensor": "The sensor that provides the resource manager discharge data."
+                  }
+              }
+          }
+
             }
         }
     },
