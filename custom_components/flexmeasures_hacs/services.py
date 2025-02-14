@@ -53,9 +53,6 @@ LOGGER = logging.getLogger(__name__)
 async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Set up services."""
 
-    # Is this the correct way and place to set this?
-    client: FlexMeasuresClient = hass.data[DOMAIN]["fm_client"]
-
     ############
     # Services #
     ############
@@ -86,6 +83,7 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     async def trigger_and_get_schedule(
         call: ServiceCall,
     ):  # pylint: disable=possibly-unused-variable
+        client: FlexMeasuresClient = hass.data[DOMAIN]["fm_client"]
         resolution = pd.Timedelta(RESOLUTION)
         tzinfo = dt_util.get_time_zone(hass.config.time_zone)
         start = time_ceil(datetime.now(tz=tzinfo), resolution)
@@ -136,6 +134,8 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     async def post_measurements(
         call: ServiceCall,
     ):  # pylint: disable=possibly-unused-variable
+        client: FlexMeasuresClient = hass.data[DOMAIN]["fm_client"]
+
         await client.post_measurements(
             sensor_id=call.data.get("sensor_id"),
             start=call.data.get("start"),

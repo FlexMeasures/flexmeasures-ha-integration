@@ -33,12 +33,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})
 
-    # use entry.data directly instead of the config_data dict
-    # config_data = dict(entry.data)
-    # Registers update listener to update config entry when options are updated.
-    # entry.add_update_listener(options_update_listener)
-    # Store a reference to the unsubscribe function to cleanup if an entry is unloaded.
-    # config_data["unsub_options_update_listener"] = unsub_options_update_listener
+    # Reload integration when the options are updated
+    entry.async_on_unload(entry.add_update_listener(options_update_listener))
 
     host, ssl = get_host_and_ssl_from_url(get_from_option_or_config("url", entry))
     client = FlexMeasuresClient(
