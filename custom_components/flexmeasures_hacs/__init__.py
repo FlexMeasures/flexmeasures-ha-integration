@@ -32,6 +32,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up FlexMeasures from a config entry."""
 
     hass.data.setdefault(DOMAIN, {})
+
+    # Reload integration when the options are updated
     entry.async_on_unload(entry.add_update_listener(options_update_listener))
 
     host, ssl = get_host_and_ssl_from_url(get_from_option_or_config("url", entry))
