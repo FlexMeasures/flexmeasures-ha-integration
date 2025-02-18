@@ -41,7 +41,7 @@ send_frbc_instruction:
           min: 0
           max: 1
           step: 0.01
-          mode: "slide"
+          mode: "slider"
     execution_time:
       required: true
       selector:
