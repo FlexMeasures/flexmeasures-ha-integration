@@ -14,7 +14,7 @@ from flexmeasures_client.s2.control_types.FRBC.frbc_tunes import (
     FillRateBasedControlTUNES,
 )
 from flexmeasures_client.s2.utils import get_unique_id
-from s2python.common import EnergyManagementRole, Handshake
+from s2python.common import EnergyManagementRole, Handshake, ControlType
 
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
@@ -67,7 +67,10 @@ class WebSocketHandler:
         self.entry = entry
         self.wsock = web.WebSocketResponse(heartbeat=None)
 
-        self.cem = CEM(fm_client=hass.data[DOMAIN]["fm_client"])
+        self.cem = CEM(
+            fm_client=hass.data[DOMAIN]["fm_client"],
+            default_control_type=ControlType.FILL_RATE_BASED_CONTROL,
+        )
         frbc_data: FRBC_Config = hass.data[DOMAIN]["frbc_config"]
         frbc = FillRateBasedControlTUNES(**asdict(frbc_data))
         hass.data[DOMAIN]["cem"] = self.cem
