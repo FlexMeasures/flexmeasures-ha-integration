@@ -2,12 +2,14 @@
 
 from datetime import datetime
 import json
+import uuid
 import logging
 from typing import cast
 
 from flexmeasures_client import FlexMeasuresClient
 from flexmeasures_client.s2.cem import CEM
 from s2python.common import ControlType
+from s2python.frbc import FRBCInstruction
 import pandas as pd
 import voluptuous as vol
 
@@ -44,6 +46,11 @@ SERVICES = [
         "schema": None,
         "service": "post_measurements",
         "service_func_name": "post_measurements",
+    },
+    {
+        "schema": None,
+        "service": "send_frbc_instruction",
+        "service_func_name": "send_frbc_instruction",
     },
 ]
 
@@ -143,6 +150,28 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
             values=call.data.get("values"),
             unit=call.data.get("unit"),
             prior=call.data.get("prior"),
+        )
+
+    async def send_frbc_instruction(
+        call: ServiceCall,
+    ):  # pylint: disable=possibly-unused-variable
+        """Send S2 Fill Rate Based Control message to the ResourceManager"""
+
+        if "cem" not in hass.data[DOMAIN]:
+            raise UndefinedCEMError()
+
+        cem: CEM = hass.data[DOMAIN]["cem"]
+
+        await cem.send_message(
+            FRBCInstruction(
+                id=call.data.get("id", uuid.uuid4()),
+                message_id=call.data.get("message_id", uuid.uuid4()),
+                actuator_id=call.data.get("actuator_id", uuid.uuid4()),
+                operation_mode=call.data.get("operation_mode", "DEFAULT_MODE"),
+                operation_mode_factor=call.data.get("operation_mode_factor", 1.0),
+                execution_time=call.data.get("execution_time", datetime.utcnow()),
+                abnormal_condition=call.data.get("abnormal_condition", False),
+            )
         )
 
     #####################

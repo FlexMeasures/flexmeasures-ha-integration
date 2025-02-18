@@ -253,6 +253,36 @@
                 }
             },
             "name": "Trigger and get schedule"
-        }
+        },
+      "send_frbc_instruction": {
+        "description": "Send an FRBC instruction.",
+        "fields": {
+            "id": {
+                "description": "Unique identifier for the instruction.",
+                "name": "ID"
+            },
+            "message_id": {
+                "description": "Message identifier.",
+                "name": "Message ID"
+            },
+            "actuator_id": {
+                "description": "Actuator identifier.",
+                "name": "Actuator ID"
+            },
+            "operation_mode": {
+                "description": "Operation mode for the actuator.",
+                "name": "Operation Mode"
+            },
+            "operation_mode_factor": {
+                "description": "Factor for the operation mode, ranging from 0 to 1.",
+                "name": "Operation Mode Factor"
+            },
+            "execution_time": {
+                "description": "Time at which the instruction should be executed.",
+                "name": "Execution Time"
+            }
+        },
+        "name": "Send FRBC Instruction"
+      }
     }
 }
