@@ -173,7 +173,7 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
                 operation_mode=call.data.get("operation_mode", uuid.uuid4()),
                 operation_mode_factor=call.data.get("operation_mode_factor", 1.0),
                 execution_time=tz.localize(
-                    call.data.get("execution_time", datetime.now()), tz
+                    call.data.get("execution_time", datetime.now())
                 ),
                 abnormal_condition=call.data.get("abnormal_condition", False),
             )
