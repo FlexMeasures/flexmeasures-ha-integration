@@ -158,7 +158,6 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     ):  # pylint: disable=possibly-unused-variable
         """Send S2 Fill Rate Based Control message to the ResourceManager"""
 
-        breakpoint()
         if "cem" not in hass.data[DOMAIN]:
             raise UndefinedCEMError()
 
