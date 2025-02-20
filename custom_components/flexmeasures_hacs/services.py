@@ -157,6 +157,7 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
         call: ServiceCall,
     ):  # pylint: disable=possibly-unused-variable
         """Send S2 Fill Rate Based Control message to the ResourceManager"""
+        breakpoint()
 
         if "cem" not in hass.data[DOMAIN]:
             raise UndefinedCEMError()
@@ -164,7 +165,7 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
         cem: CEM = hass.data[DOMAIN]["cem"]
 
         tz = pytz.timezone(hass.config.time_zone)
-
+        DT_FMT = "%Y-%m-%d %H:%m:%S"
         await cem.send_message(
             FRBCInstruction(
                 id=call.data.get("id", uuid.uuid4()),
@@ -173,7 +174,12 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
                 operation_mode=call.data.get("operation_mode", uuid.uuid4()),
                 operation_mode_factor=call.data.get("operation_mode_factor", 1.0),
                 execution_time=tz.localize(
-                    call.data.get("execution_time", datetime.now())
+                    datetime.strptime(
+                        call.data.get(
+                            "execution_time", datetime.now().strftime(DT_FMT)
+                        ),
+                        DT_FMT,
+                    )
                 ),
                 abnormal_condition=call.data.get("abnormal_condition", False),
             )
