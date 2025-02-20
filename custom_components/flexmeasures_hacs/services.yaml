@@ -18,19 +18,19 @@ trigger_and_get_schedule:
 send_frbc_instruction:
   fields:
     id:
-      required: true
+      required: false
       selector:
         text:
     message_id:
-      required: true
+      required: false
       selector:
         text:
     actuator_id:
-      required: true
+      required: false
       selector:
         text:
     operation_mode:
-      required: true
+      required: false
       selector:
         text:
     operation_mode_factor:
@@ -46,3 +46,8 @@ send_frbc_instruction:
       required: true
       selector:
           datetime:
+    abnormal_condition:
+      required: false
+      default: false
+      selector:
+        boolean:

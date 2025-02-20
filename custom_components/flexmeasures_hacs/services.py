@@ -5,6 +5,7 @@ import json
 import uuid
 import logging
 from typing import cast
+import pytz
 
 from flexmeasures_client import FlexMeasuresClient
 from flexmeasures_client.s2.cem import CEM
@@ -162,14 +163,18 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
         cem: CEM = hass.data[DOMAIN]["cem"]
 
+        tz = pytz.timezone(hass.config.time_zone)
+
         await cem.send_message(
             FRBCInstruction(
                 id=call.data.get("id", uuid.uuid4()),
                 message_id=call.data.get("message_id", uuid.uuid4()),
                 actuator_id=call.data.get("actuator_id", uuid.uuid4()),
-                operation_mode=call.data.get("operation_mode", "DEFAULT_MODE"),
+                operation_mode=call.data.get("operation_mode", uuid.uuid4()),
                 operation_mode_factor=call.data.get("operation_mode_factor", 1.0),
-                execution_time=call.data.get("execution_time", datetime.utcnow()),
+                execution_time=tz.localize(
+                    call.data.get("execution_time", datetime.now()), tz
+                ),
                 abnormal_condition=call.data.get("abnormal_condition", False),
             )
         )
