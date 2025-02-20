@@ -280,6 +280,10 @@
             "execution_time": {
                 "description": "Time at which the instruction should be executed.",
                 "name": "Execution Time"
+            },
+            "abnormal_condition": {
+                "description": "Whether the FRBC Instruction is abnormal or normal. Default: normal.",
+                "name": "Abnormal Condition"
             }
         },
         "name": "Send FRBC Instruction"
