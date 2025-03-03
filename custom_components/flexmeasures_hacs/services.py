@@ -111,6 +111,10 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
                 "production_price_sensor", entry
             ),
         )
+
+        flex_model.update(call.data.get("flex_model", {}))
+        flex_context.update(call.data.get("flex_context", {}))
+
         schedule_input = {
             "sensor_id": get_from_option_or_config("power_sensor", entry),
             "start": start,

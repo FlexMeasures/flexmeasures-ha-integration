@@ -250,6 +250,14 @@
                 "soc_at_start": {
                     "description": "Initial state of charge of the energy storage.",
                     "name": "Initial SOC"
+                },
+                "flex_model" : {
+                    "description" : "Device flexibility model.",
+                    "name" : "Flex Model"
+                },
+                "flex_context" : {
+                    "description" : "Device flexibility context.",
+                    "name" : "Flex Context"
                 }
             },
             "name": "Trigger and get schedule"
