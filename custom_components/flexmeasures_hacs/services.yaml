@@ -14,14 +14,7 @@ trigger_and_get_schedule:
       required: true
       selector:
         number:
-    flex_model:
-      required: false
-      selector:
-        object:
-    flex_context:
-      required: false
-      selector:
-        object:
+
 send_frbc_instruction:
   fields:
     id:
