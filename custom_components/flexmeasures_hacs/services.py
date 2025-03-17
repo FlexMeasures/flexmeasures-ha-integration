@@ -16,7 +16,12 @@ import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfPower
-from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.core import (
+    HomeAssistant,
+    ServiceCall,
+    SupportsResponse,
+    ServiceResponse,
+)
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 import homeassistant.util.dt as dt_util
 
@@ -52,6 +57,12 @@ SERVICES = [
         "schema": None,
         "service": "send_frbc_instruction",
         "service_func_name": "send_frbc_instruction",
+    },
+    {
+        "schema": None,
+        "service": "get_measurements",
+        "service_func_name": "get_measurements",
+        "supports_response": SupportsResponse.ONLY,
     },
 ]
 
@@ -187,6 +198,21 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
                 abnormal_condition=call.data.get("abnormal_condition", False),
             )
         )
+
+    async def get_measurements(
+        call: ServiceCall,
+    ) -> ServiceResponse:  # pylint: disable=possibly-unused-variable
+        client: FlexMeasuresClient = hass.data[DOMAIN]["fm_client"]
+
+        response = await client.get_sensor_data(
+            sensor_id=call.data.get("sensor_id"),
+            start=call.data.get("start"),
+            duration=call.data.get("duration"),
+            unit=call.data.get("unit"),
+            resolution=call.data.get("resolution"),
+        )
+
+        return response
 
     #####################
     # Register services #

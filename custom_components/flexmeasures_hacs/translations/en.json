@@ -262,7 +262,7 @@
             },
             "name": "Trigger and get schedule"
         },
-      "send_frbc_instruction": {
+        "send_frbc_instruction": {
         "description": "Send an FRBC instruction.",
         "fields": {
             "id": {
@@ -295,6 +295,32 @@
             }
         },
         "name": "Send FRBC Instruction"
-      }
+        },
+        "get_measurements": {
+            "name" : "Get Measurements",
+            "description": "Retrieve measurements from a specific sensor",
+            "fields": {
+                "sensor_id": {
+                    "description": "Unique identifier for the sensor.",
+                    "name": "Sensor ID"
+                },
+                "start": {
+                    "description": "Start time of the measurement request.",
+                    "name": "Start"
+                },
+                "duration": {
+                    "description": "Duration of the measurement request, specifying how long data should be retrieved for.",
+                    "name": "Duration"
+                },
+                "unit": {
+                    "description": "Unit of measurement for the data (e.g., kW, MW, etc.).",
+                    "name": "Unit"
+                },
+                "resolution": {
+                    "description": "Resolution for the data in ISO 8601 format (e.g., PT15M, P1H, etc.).",
+                    "name": "Resolution"
+                }
+            }
+        }
     }
 }

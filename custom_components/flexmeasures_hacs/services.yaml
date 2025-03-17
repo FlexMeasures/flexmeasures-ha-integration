@@ -58,3 +58,25 @@ send_frbc_instruction:
       default: false
       selector:
         boolean:
+get_measurements:
+  fields:
+    sensor_id:
+      required: true
+      selector:
+        number:
+    start:
+      required: true
+      selector:
+        datetime:
+    duration:
+      required: true
+      selector:
+        text:
+    unit:
+      required: true
+      selector:
+        text:
+    resolution:
+      required: true
+      selector:
+        text:
