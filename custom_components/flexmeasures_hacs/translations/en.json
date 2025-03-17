@@ -296,7 +296,7 @@
         },
         "name": "Send FRBC Instruction"
         },
-        "get_measurements ": {
+        "get_measurements": {
             "name" : "Get Measurements",
             "description": "Retrieve measurements from a specific sensor",
             "fields": {
