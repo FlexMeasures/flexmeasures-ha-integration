@@ -107,6 +107,14 @@ class WebSocketHandler:
         try:
             async for msg in self.wsock:
                 message = msg.json()
+                print(
+                    f"""
+{'-'*40}
+Message Received
+{message}
+{'-'*40}
+                    """
+                )
 
                 self._logger.debug(message)
                 self._logger.debug(msg.type)
