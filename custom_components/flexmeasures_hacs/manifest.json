@@ -10,6 +10,6 @@
   "issue_tracker": "https://github.com/FlexMeasures/flexmeasures-hacs/issues",
   "requirements": ["flexmeasures-client[s2]==0.4.5", "isodate==0.6.1"],
   "ssdp": [],
-  "version":"0.2.11",
+  "version":"0.2.12",
   "zeroconf": []
 }
