@@ -16,6 +16,8 @@ class FRBC_Config:
     consumption_sensor_id: int
     production_sensor_id: int
 
+    active_actuator_id_sensor_id: int
+
     fill_level_sensor_id: int
     fill_rate_sensor_id: int
 

@@ -107,7 +107,6 @@ class WebSocketHandler:
         try:
             async for msg in self.wsock:
                 message = msg.json()
-
                 self._logger.debug(message)
                 self._logger.debug(msg.type)
 
