@@ -35,7 +35,7 @@ S2_CONFIG = {
     "nes_fill_rate_sensor_id": 8,
     "nes_efficiency_sensor_id": 9,
     "rm_discharge_sensor_id": 10,
-    "active_actuador_id_sensor_id": 15,
+    "active_actuator_id_sensor_id": 15,
 }
 
 

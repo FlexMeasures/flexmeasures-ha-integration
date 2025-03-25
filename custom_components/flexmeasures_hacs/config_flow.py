@@ -59,7 +59,7 @@ S2_SCHEMA = vol.Schema(
             description={"suggested_value": 221},
         ): int,
         vol.Optional(
-            "active_actuador_id_sensor_id",
+            "active_actuator_id_sensor_id",
             default=222,
             description={"suggested_value": 222},
         ): int,

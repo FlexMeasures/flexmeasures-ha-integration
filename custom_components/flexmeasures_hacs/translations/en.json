@@ -179,7 +179,7 @@
                     "thp_efficiency_sensor_id": "thp_efficiency_sensor_id",
                     "thp_fill_rate_sensor_id": "thp_fill_rate_sensor_id",
                     "usage_forecast_sensor_id": "usage_forecast_sensor_id",
-                    "active_actuador_id_sensor_id" : "active_actuador_id_sensor_id",
+                    "active_actuator_id_sensor_id" : "active_actuator_id_sensor_id",
                     "username": "Username"
                 },
                 "data_description": {
@@ -202,7 +202,7 @@
                     "thp_efficiency_sensor_id": "thp_efficiency_sensor_id",
                     "thp_fill_rate_sensor_id": "thp_fill_rate_sensor_id",
                     "usage_forecast_sensor_id": "usage_forecast_sensor_id",
-                    "active_actuador_id_sensor_id" : "Sensor ID to record which actuator is active.",
+                    "active_actuator_id_sensor_id" : "Sensor ID to record which actuator is active.",
                     "username": "The email to log in to the FlexMeasures instance."
                 },
                 "sections": {
@@ -218,7 +218,7 @@
                     "nes_fill_rate_sensor_id": "nes_fill_rate_sensor_id",
                     "nes_efficiency_sensor_id": "nes_efficiency_sensor_id",
                     "rm_discharge_sensor": "Resource Manager Discharge Sensor",
-                    "active_actuador_id_sensor_id" : "active_actuador_id_sensor_id"
+                    "active_actuator_id_sensor_id" : "active_actuator_id_sensor_id"
                   },
                   "data_description": {
                     "fill_level_sensor_id": "Fill level sensor ID of the NES heat storage.",
@@ -229,7 +229,7 @@
                     "nes_fill_rate_sensor_id": "Fill rate sensor ID of the Nestore hot water storage internal thermal resistor.",
                     "nes_efficiency_sensor_id": "Nestore internal resistor coeffient of performance (Thermal Power / Electrical Power).",
                     "rm_discharge_sensor": "The sensor that provides the resource manager discharge data.",
-                    "active_actuador_id_sensor_id" : "Sensor ID to record which actuator is active."
+                    "active_actuator_id_sensor_id" : "Sensor ID to record which actuator is active."
                   }
               }
           }
