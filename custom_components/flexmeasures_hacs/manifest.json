@@ -8,7 +8,7 @@
   "homekit": {},
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/FlexMeasures/flexmeasures-hacs/issues",
-  "requirements": ["flexmeasures-client[s2]==0.4.3", "isodate==0.6.1"],
+  "requirements": ["flexmeasures-client[s2]==0.4.5", "isodate==0.6.1"],
   "ssdp": [],
   "version":"0.2.10",
   "zeroconf": []
