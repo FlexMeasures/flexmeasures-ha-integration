@@ -80,7 +80,3 @@ get_measurements:
       required: false
       selector:
         text:
-
-call_cem_trigger_schedule:
-    placeholder:
-      required: false
