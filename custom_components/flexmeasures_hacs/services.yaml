@@ -77,6 +77,6 @@ get_measurements:
       selector:
         text:
     resolution:
-      required: true
+      required: false
       selector:
         text:
