@@ -82,4 +82,3 @@ get_measurements:
         text:
 
 call_cem_trigger_schedule:
-  fields:
