@@ -69,7 +69,7 @@ get_measurements:
       selector:
         datetime:
     duration:
-      required: false
+      required: true
       selector:
         text:
     unit:
@@ -81,5 +81,5 @@ get_measurements:
       selector:
         text:
 
-call_cem_trigger_scehdule:
+call_cem_trigger_schedule:
   fields:

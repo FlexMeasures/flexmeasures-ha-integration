@@ -69,8 +69,8 @@ SERVICES = [
     },
     {
         "schema": None,
-        "service": "call_cem_trigger_scehdule",
-        "service_func_name": "call_cem_trigger_scehdule",
+        "service": "call_cem_trigger_schedule",
+        "service_func_name": "call_cem_trigger_schedule",
     },
 ]
 
@@ -222,7 +222,7 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
         return response
 
-    async def call_cem_trigger_scehdule(call: ServiceCall):
+    async def call_cem_trigger_schedule(call: ServiceCall):
         if "cem" not in hass.data[DOMAIN]:
             raise UndefinedCEMError()
 
@@ -233,7 +233,7 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
                 FillRateBasedControlTUNES,
                 cem._control_types_handlers[ControlType.FILL_RATE_BASED_CONTROL],
             )
-            await frbc.trigger_scehdule()
+            await frbc.trigger_schedule()
 
     #####################
     # Register services #

@@ -238,7 +238,7 @@
         }
     },
     "services": {
-        "call_cem_trigger_scehdule" : {
+        "call_cem_trigger_schedule" : {
             "description" : "Call CEM Trigger Schedule",
             "name" : "Call CEM Trigger schedule"
         },
