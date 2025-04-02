@@ -212,13 +212,18 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     ) -> ServiceResponse:  # pylint: disable=possibly-unused-variable
         client: FlexMeasuresClient = hass.data[DOMAIN]["fm_client"]
 
-        response = await client.get_sensor_data(
+        data_query = dict(
             sensor_id=call.data.get("sensor_id"),
             start=call.data.get("start"),
             duration=call.data.get("duration"),
             unit=call.data.get("unit"),
             resolution=call.data.get("resolution"),
         )
+
+        if "source" in call.data:
+            data_query["source"] = call.data["source"]
+
+        response = await client.get_sensor_data(**data_query)
 
         return response
 
