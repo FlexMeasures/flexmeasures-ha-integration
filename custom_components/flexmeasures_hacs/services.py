@@ -9,6 +9,9 @@ import pytz
 
 from flexmeasures_client import FlexMeasuresClient
 from flexmeasures_client.s2.cem import CEM
+from flexmeasures_client.s2.control_types.FRBC.frbc_tunes import (
+    FillRateBasedControlTUNES,
+)
 from s2python.common import ControlType
 from s2python.frbc import FRBCInstruction
 import pandas as pd
@@ -63,6 +66,11 @@ SERVICES = [
         "service": "get_measurements",
         "service_func_name": "get_measurements",
         "supports_response": SupportsResponse.ONLY,
+    },
+    {
+        "schema": None,
+        "service": "call_cem_trigger_schedule",
+        "service_func_name": "call_cem_trigger_schedule",
     },
 ]
 
@@ -213,6 +221,19 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
         )
 
         return response
+
+    async def call_cem_trigger_schedule(call: ServiceCall):
+        if "cem" not in hass.data[DOMAIN]:
+            raise UndefinedCEMError()
+
+        cem: CEM = hass.data[DOMAIN]["cem"]
+
+        if cem.control_type == ControlType.FILL_RATE_BASED_CONTROL:
+            frbc: FillRateBasedControlTUNES = cast(
+                FillRateBasedControlTUNES,
+                cem._control_types_handlers[ControlType.FILL_RATE_BASED_CONTROL],
+            )
+            await frbc.trigger_schedule()
 
     #####################
     # Register services #
