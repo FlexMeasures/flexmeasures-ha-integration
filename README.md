@@ -1,6 +1,6 @@
 # FlexMeasures
 
-The `flexmeasures` integration offers an integration with [FlexMeasures](https://flexmeasures.io/) instances to schedule flexible energy assets.
+The `flexmeasures` integration offers an integration for [HomeAssistant](https://www.home-assistant.io/) with [FlexMeasures](https://flexmeasures.io/) instances to schedule flexible energy assets.
 
 FlexMeasures can be used to schedule batteries, EV's, heat storage, and other assets. The integration offers:
 
