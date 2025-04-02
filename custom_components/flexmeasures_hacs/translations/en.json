@@ -323,6 +323,10 @@
                 "resolution": {
                     "description": "Resolution for the data in ISO 8601 format (e.g., PT15M, P1H, etc.).",
                     "name": "Resolution"
+                },
+                "source": {
+                    "description": "Filter the data by Source ID.",
+                    "name": "Source"
                 }
             }
         }
