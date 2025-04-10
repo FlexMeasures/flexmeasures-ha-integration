@@ -61,7 +61,9 @@ class WebSocketHandler:
 
     cem: CEM
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, request: web.Request) -> None:
+    def __init__(
+        self, hass: HomeAssistant, entry: ConfigEntry, request: web.Request
+    ) -> None:
         """Initialize an active connection."""
         self.hass = hass
         self.request = request
