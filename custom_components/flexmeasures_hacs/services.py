@@ -96,7 +96,7 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
         await cem.activate_control_type(control_type=control_type)
 
         hass.states.async_set(
-            f"{DOMAIN}.cem", json.dumps({"control_type": str(cem.control_type)})
+            f"{DOMAIN}.{entry.entry_id}.cem", json.dumps({"control_type": str(cem.control_type)})
         )
 
     async def trigger_and_get_schedule(

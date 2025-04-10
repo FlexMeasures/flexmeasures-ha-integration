@@ -33,7 +33,7 @@ class WebsocketAPIView(HomeAssistantView):
     url: str = WS_VIEW_URI
     requires_auth: bool = False
 
-    def __init__(self, entry) -> None:
+    def __init__(self, entry: ConfigEntry) -> None:
         """Initialize websocket view."""
         super().__init__()
         self.entry = entry
