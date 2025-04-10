@@ -23,7 +23,7 @@ def auto_enable_custom_integrations(enable_custom_integrations):
     yield
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 async def setup_fm_integration(hass: HomeAssistant):
     """FlexMeasures integration setup."""
     entry = MockConfigEntry(
@@ -50,6 +50,7 @@ async def setup_fm_integration(hass: HomeAssistant):
     await hass.async_block_till_done()
     assert entry.entry_id in hass.data[DOMAIN]
     print(f"ENTRY ID = {entry.entry_id}")
+    print(f"HASS DATA FOR OUR DOMAIN = {hass.data[DOMAIN]}")
 
     return entry
 
