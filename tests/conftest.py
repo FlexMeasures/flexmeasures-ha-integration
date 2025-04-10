@@ -42,7 +42,6 @@ async def setup_fm_integration(hass: HomeAssistant):
             "soc_min": 0.0,
             "soc_max": 0.001,
         },
-        unique_id=1212121,
         state=ConfigEntryState.NOT_LOADED,
     )
 
