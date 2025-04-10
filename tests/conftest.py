@@ -23,7 +23,7 @@ def auto_enable_custom_integrations(enable_custom_integrations):
     yield
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 async def setup_fm_integration(hass: HomeAssistant):
     """FlexMeasures integration setup."""
     entry = MockConfigEntry(
