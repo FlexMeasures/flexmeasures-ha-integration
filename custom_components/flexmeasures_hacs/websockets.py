@@ -17,6 +17,7 @@ from flexmeasures_client.s2.utils import get_unique_id
 from s2python.common import EnergyManagementRole, Handshake, ControlType
 
 from homeassistant.components.http import HomeAssistantView
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, WS_VIEW_NAME, WS_VIEW_URI
@@ -60,7 +61,7 @@ class WebSocketHandler:
 
     cem: CEM
 
-    def __init__(self, hass: HomeAssistant, entry, request: web.Request) -> None:
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, request: web.Request) -> None:
         """Initialize an active connection."""
         self.hass = hass
         self.request = request
@@ -68,12 +69,12 @@ class WebSocketHandler:
         self.wsock = web.WebSocketResponse(heartbeat=None)
 
         self.cem = CEM(
-            fm_client=hass.data[DOMAIN]["fm_client"],
+            fm_client=hass.data[DOMAIN][entry.entry_id]["fm_client"],
             default_control_type=ControlType.FILL_RATE_BASED_CONTROL,
         )
-        frbc_data: FRBC_Config = hass.data[DOMAIN]["frbc_config"]
+        frbc_data: FRBC_Config = hass.data[DOMAIN][entry.entry_id]["frbc_config"]
         frbc = FillRateBasedControlTUNES(**asdict(frbc_data))
-        hass.data[DOMAIN]["cem"] = self.cem
+        hass.data[DOMAIN][entry.entry_id]["cem"] = self.cem
         self.cem.register_control_type(frbc)
 
         self._logger = WebSocketAdapter(_WS_LOGGER, {"connid": id(self)})
