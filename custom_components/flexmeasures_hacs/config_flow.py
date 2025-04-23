@@ -66,6 +66,14 @@ S2_SCHEMA = vol.Schema(
         vol.Optional(
             "rm_discharge_sensor_id", default=213, description={"suggested_value": 213}
         ): int,
+        vol.Optional(
+            "state_of_charge_sensor_id", default=2, description={"suggested_value": 2}
+        ): int,
+        vol.Optional(
+            "leakage_beaviour_sensor_id",
+            default=213,
+            description={"suggested_value": 213},
+        ): int,
     }
 )
 
