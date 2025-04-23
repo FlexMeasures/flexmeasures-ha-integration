@@ -30,5 +30,10 @@ class FRBC_Config:
     nes_efficiency_sensor_id: int
 
     rm_discharge_sensor_id: int
+    leakage_beaviour_sensor_id: int
+    state_of_charge_sensor_id: int
 
     schedule_duration: timedelta
+
+    production_price_sensor: int
+    consumption_price_sensor: int

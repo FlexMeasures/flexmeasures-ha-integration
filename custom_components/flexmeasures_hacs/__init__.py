@@ -55,8 +55,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     frbc_data_dict = {}
 
     non_s2_fields = [
-        "consumption_sensor_id",
-        "production_sensor_id",
+        "consumption_price_sensor",
+        "production_price_sensor",
         "schedule_duration",
     ]
 
