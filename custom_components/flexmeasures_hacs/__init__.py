@@ -31,8 +31,6 @@ PLATFORMS: list[Platform] = [Platform.SENSOR]
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up FlexMeasures from a config entry."""
 
-    hass.data.setdefault(DOMAIN, {})
-
     # Reload integration when the options are updated
     entry.async_on_unload(entry.add_update_listener(options_update_listener))
 
@@ -69,9 +67,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             )
 
     FRBC_data = FRBC_Config(**frbc_data_dict)
-    hass.data[DOMAIN][FRBC_CONFIG] = FRBC_data
-
-    hass.data[DOMAIN]["fm_client"] = client
+    entry_config = {
+        FRBC_CONFIG: FRBC_data,
+        "fm_client": client,
+    }
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = entry_config
 
     hass.http.register_view(WebsocketAPIView(entry))
 
@@ -98,7 +98,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await async_unload_services(hass)
 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        hass.data[DOMAIN].pop(entry.entry_id, None)
+        hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok
 
