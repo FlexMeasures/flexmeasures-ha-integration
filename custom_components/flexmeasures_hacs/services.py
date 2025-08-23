@@ -89,10 +89,10 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     ):  # pylint: disable=possibly-unused-variable
         """Change control type S2 Protocol."""
 
-        if "cem" not in hass.data[DOMAIN]:
+        if "cem" not in hass.data[DOMAIN][entry.entry_id]:
             raise UndefinedCEMError()
 
-        cem: CEM = hass.data[DOMAIN]["cem"]
+        cem: CEM = hass.data[DOMAIN][entry.entry_id]["cem"]
 
         control_type = cast(str, call.data.get("control_type"))
 
@@ -104,13 +104,14 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
         await cem.activate_control_type(control_type=control_type)
 
         hass.states.async_set(
-            f"{DOMAIN}.cem", json.dumps({"control_type": str(cem.control_type)})
+            f"{DOMAIN}.{entry.entry_id}.cem",
+            json.dumps({"control_type": str(cem.control_type)}),
         )
 
     async def trigger_and_get_schedule(
         call: ServiceCall,
     ):  # pylint: disable=possibly-unused-variable
-        client: FlexMeasuresClient = hass.data[DOMAIN]["fm_client"]
+        client: FlexMeasuresClient = hass.data[DOMAIN][entry.entry_id]["fm_client"]
         resolution = pd.Timedelta(RESOLUTION)
         tzinfo = dt_util.get_time_zone(hass.config.time_zone)
         start = time_ceil(datetime.now(tz=tzinfo), resolution)
@@ -154,10 +155,10 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
             for i, value in enumerate(schedule["values"])
         ]
 
-        hass.data[DOMAIN][SCHEDULE_STATE]["schedule"] = schedule
-        hass.data[DOMAIN][SCHEDULE_STATE]["start"] = start
-        hass.data[DOMAIN][SCHEDULE_STATE]["duration"] = get_from_option_or_config(
-            "schedule_duration", entry
+        hass.data[DOMAIN][entry.entry_id][SCHEDULE_STATE]["schedule"] = schedule
+        hass.data[DOMAIN][entry.entry_id][SCHEDULE_STATE]["start"] = start
+        hass.data[DOMAIN][entry.entry_id][SCHEDULE_STATE]["duration"] = (
+            get_from_option_or_config("schedule_duration", entry)
         )
 
         async_dispatcher_send(hass, SIGNAL_UPDATE_SCHEDULE)
@@ -165,7 +166,7 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     async def post_measurements(
         call: ServiceCall,
     ):  # pylint: disable=possibly-unused-variable
-        client: FlexMeasuresClient = hass.data[DOMAIN]["fm_client"]
+        client: FlexMeasuresClient = hass.data[DOMAIN][entry.entry_id]["fm_client"]
 
         await client.post_measurements(
             sensor_id=call.data.get("sensor_id"),
@@ -181,10 +182,10 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     ):  # pylint: disable=possibly-unused-variable
         """Send S2 Fill Rate Based Control message to the ResourceManager"""
 
-        if "cem" not in hass.data[DOMAIN]:
+        if "cem" not in hass.data[DOMAIN][entry.entry_id]:
             raise UndefinedCEMError()
 
-        cem: CEM = hass.data[DOMAIN]["cem"]
+        cem: CEM = hass.data[DOMAIN][entry.entry_id]["cem"]
 
         tz = pytz.timezone(hass.config.time_zone)
         DT_FMT = "%Y-%m-%d %H:%M:%S"
@@ -210,7 +211,7 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     async def get_measurements(
         call: ServiceCall,
     ) -> ServiceResponse:  # pylint: disable=possibly-unused-variable
-        client: FlexMeasuresClient = hass.data[DOMAIN]["fm_client"]
+        client: FlexMeasuresClient = hass.data[DOMAIN][entry.entry_id]["fm_client"]
 
         data_query = dict(
             sensor_id=call.data.get("sensor_id"),
