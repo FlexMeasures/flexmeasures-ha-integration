@@ -14,7 +14,7 @@ from homeassistant.exceptions import ConfigValidationError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .config_flow import get_host_and_ssl_from_url
-from .const import DOMAIN, FRBC_CONFIG
+from .const import DOMAIN, FM_CLIENT, FRBC_CONFIG
 from .control_types import FRBC_Config
 from .services import (
     async_setup_services,
@@ -72,7 +72,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     FRBC_data = FRBC_Config(**frbc_data_dict)
     hass.data[DOMAIN][FRBC_CONFIG] = FRBC_data
 
-    hass.data[DOMAIN]["fm_client"] = client
+    hass.data[DOMAIN][FM_CLIENT] = client
 
     hass.http.register_view(WebsocketAPIView(entry))
 
