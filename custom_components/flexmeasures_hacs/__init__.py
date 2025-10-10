@@ -43,6 +43,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         password=get_from_option_or_config("password", entry),
         ssl=ssl,
         session=async_get_clientsession(hass),
+        logger=_LOGGER,
     )
 
     # store config
