@@ -92,6 +92,7 @@ class WebSocketHandler:
             try:
                 await self.wsock.send_json(message)
             except ConnectionResetError:
+                self._logger.debug("Connection reset in _websocket_producer: closing CEM..")
                 await cem.close()
 
     async def _websocket_consumer(self):
@@ -112,16 +113,19 @@ class WebSocketHandler:
 
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     if msg.data == "close":
+                        self._logger.debug("Msg.data == 'close': closing CEM..")
                         await cem.close()
                         await self.wsock.close()
                     else:
                         await cem.handle_message(message)
 
                 elif msg.type == aiohttp.WSMsgType.ERROR:
+                    self._logger.debug("Msg.type == aiohttp.WSMsgType.ERROR: closing CEM..")
                     await cem.close()
         except Exception:  # pylint: disable=broad-exception-caught
             self.entry.async_start_reauth(self.hass)
         finally:
+            self._logger.debug("Finished _websocket_consumer: closing CEM..")
             await cem.close()
 
     async def async_handle(self) -> web.WebSocketResponse:
@@ -140,6 +144,7 @@ class WebSocketHandler:
             )
 
         except ConnectionResetError:
+            self._logger.debug("Connection reset in async_handle: closing CEM..")
             await self.cem.close()
             self.entry.async_start_reauth(self.hass)
 
