@@ -44,6 +44,7 @@
                       "name": "S2",
                       "description": "Optional parameters to interface to a S2 resource manager",
                       "data": {
+                        "consumption_sensor_id": "consumption_sensor_id",
                         "fill_level_sensor_id": "fill_level_sensor_id",
                         "fill_rate_sensor_id": "fill_rate_sensor_id",
                         "usage_forecast_sensor_id": "usage_forecast_sensor_id",
@@ -56,6 +57,7 @@
                         "state_of_charge_sensor_id" : "state_of_charge_sensor_id"
                       },
                       "data_description": {
+                        "consumption_sensor_id": "Sensor ID to record power consumption.",
                         "fill_level_sensor_id": "Fill level sensor ID of the NES heat storage.",
                         "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
                         "usage_forecast_sensor_id": "Usage Forecast sensor ID.",
@@ -72,6 +74,7 @@
             },
             "user": {
                 "data": {
+                    "consumption_sensor_id": "consumption_sensor_id",
                     "consumption_price_sensor": "Consumption price sensor",
                     "fill_level_sensor_id": "fill_level_sensor_id",
                     "fill_rate_sensor_id": "fill_rate_sensor_id",
@@ -94,6 +97,7 @@
                     "username": "Username"
                 },
                 "data_description": {
+                    "consumption_sensor_id": "The sensor that records the power consumption.",
                     "consumption_price_sensor": "The sensor that provides the consumption price data.",
                     "fill_level_sensor_id": "fill_level_sensor_id",
                     "fill_rate_sensor_id": "fill_rate_sensor_id",
@@ -120,6 +124,7 @@
                   "name": "S2",
                   "description": "Optional parameters to interface to a S2 resource manager",
                   "data": {
+                    "consumption_sensor_id": "consumption_sensor_id",
                     "fill_level_sensor_id": "fill_level_sensor_id",
                     "fill_rate_sensor_id": "fill_rate_sensor_id",
                     "usage_forecast_sensor_id": "usage_forecast_sensor_id",
@@ -132,6 +137,7 @@
                     "state_of_charge_sensor_id" : "state_of_charge_sensor_id"
                   },
                   "data_description": {
+                    "consumption_sensor_id": "Sensor ID to record power consumption.",
                     "fill_level_sensor_id": "Fill level sensor ID of the NES heat storage.",
                     "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
                     "usage_forecast_sensor_id": "Usage Forecast sensor ID.",
@@ -168,6 +174,7 @@
         "step": {
             "init": {
                 "data": {
+                    "consumption_sensor_id": "consumption_sensor_id",
                     "consumption_price_sensor": "Consumption price sensor",
                     "fill_level_sensor_id": "fill_level_sensor_id",
                     "fill_rate_sensor_id": "fill_rate_sensor_id",
@@ -191,6 +198,7 @@
                     "username": "Username"
                 },
                 "data_description": {
+                    "consumption_sensor_id": "consumption_sensor_id",
                     "consumption_price_sensor": "The sensor that provides the consumption price data.",
                     "fill_level_sensor_id": "fill_level_sensor_id",
                     "fill_rate_sensor_id": "fill_rate_sensor_id",
@@ -218,6 +226,7 @@
                   "name": "S2",
                   "description": "Optional parameters to interface to a S2 resource manager",
                   "data": {
+                    "consumption_sensor_id": "consumption_sensor_id",
                     "fill_level_sensor_id": "fill_level_sensor_id",
                     "fill_rate_sensor_id": "fill_rate_sensor_id",
                     "usage_forecast_sensor_id": "usage_forecast_sensor_id",
@@ -231,6 +240,7 @@
                     "state_of_charge_sensor_id" : "state_of_charge_sensor_id"
                   },
                   "data_description": {
+                    "consumption_sensor_id": "Sensor ID to record power consumption",
                     "fill_level_sensor_id": "Fill level sensor ID of the NES heat storage.",
                     "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
                     "usage_forecast_sensor_id": "Usage Forecast sensor ID.",

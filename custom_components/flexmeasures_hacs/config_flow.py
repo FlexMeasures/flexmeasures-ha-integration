@@ -26,6 +26,9 @@ from .const import DOMAIN
 S2_SCHEMA = vol.Schema(
     {
         vol.Optional(
+            "consumption_sensor_id", default=357, description={"suggested_value": 357}
+        ): int,
+        vol.Optional(
             "soc_minima_sensor_id", default=218, description={"suggested_value": 218}
         ): int,
         vol.Optional(
