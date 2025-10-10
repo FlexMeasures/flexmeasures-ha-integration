@@ -44,9 +44,9 @@
           "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
           "usage_forecast_sensor_id": "Usage Forecast sensor ID.",
           "thp_fill_rate_sensor_id": "Fill rate sensor ID of the Tarnoc Heat Pump.",
-          "thp_efficiency_sensor_id": "Tarnoc heat pump coeffient of performance (Thermal Power / Electrical Power).",
+          "thp_efficiency_sensor_id": "Tarnoc heat pump coefficient of performance (Thermal Power / Electrical Power).",
           "nes_fill_rate_sensor_id": "Fill rate sensor ID of the Nestore hot water storage internal thermal resistor.",
-          "nes_efficiency_sensor_id": "Nestore internal resistor coeffient of performance (Thermal Power / Electrical Power)."
+          "nes_efficiency_sensor_id": "Nestore internal resistor coefficient of performance (Thermal Power / Electrical Power)."
         }
       },
       "reauth_confirm": {
@@ -92,9 +92,9 @@
           "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
           "usage_forecast_sensor_id": "Usage Forecast sensor ID.",
           "thp_fill_rate_sensor_id": "Fill rate sensor ID of the Tarnoc Heat Pump.",
-          "thp_efficiency_sensor_id": "Tarnoc heat pump coeffient of performance (Thermal Power / Electrical Power).",
+          "thp_efficiency_sensor_id": "Tarnoc heat pump coefficient of performance (Thermal Power / Electrical Power).",
           "nes_fill_rate_sensor_id": "Fill rate sensor ID of the Nestore hot water storage internal thermal resistor.",
-          "nes_efficiency_sensor_id": "Nestore internal resistor coeffient of performance (Thermal Power / Electrical Power)."
+          "nes_efficiency_sensor_id": "Nestore internal resistor coefficient of performance (Thermal Power / Electrical Power)."
         }
       }
     },
@@ -153,9 +153,9 @@
           "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
           "usage_forecast_sensor_id": "Usage Forecast sensor ID.",
           "thp_fill_rate_sensor_id": "Fill rate sensor ID of the Tarnoc Heat Pump.",
-          "thp_efficiency_sensor_id": "Tarnoc heat pump coeffient of performance (Thermal Power / Electrical Power).",
+          "thp_efficiency_sensor_id": "Tarnoc heat pump coefficient of performance (Thermal Power / Electrical Power).",
           "nes_fill_rate_sensor_id": "Fill rate sensor ID of the Nestore hot water storage internal thermal resistor.",
-          "nes_efficiency_sensor_id": "Nestore internal resistor coeffient of performance (Thermal Power / Electrical Power)."
+          "nes_efficiency_sensor_id": "Nestore internal resistor coefficient of performance (Thermal Power / Electrical Power)."
         }
       }
     },
