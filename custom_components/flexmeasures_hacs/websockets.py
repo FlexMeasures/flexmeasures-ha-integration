@@ -67,18 +67,18 @@ class WebSocketHandler:
         self.entry = entry
         self.wsock = web.WebSocketResponse(heartbeat=None)
 
+        self._logger = WebSocketAdapter(_WS_LOGGER, {"connid": id(self)})
+        self._logger.debug("new websockets connection")
+
         self.cem = CEM(
             fm_client=hass.data[DOMAIN]["fm_client"],
             default_control_type=ControlType.FILL_RATE_BASED_CONTROL,
+            logger=_WS_LOGGER,
         )
         frbc_data: FRBC_Config = hass.data[DOMAIN]["frbc_config"]
         frbc = FillRateBasedControlTUNES(**asdict(frbc_data))
         hass.data[DOMAIN]["cem"] = self.cem
         self.cem.register_control_type(frbc)
-
-        self._logger = WebSocketAdapter(_WS_LOGGER, {"connid": id(self)})
-
-        self._logger.debug("new websockets connection")
 
     async def _websocket_producer(self):
         """Send the messages available at the `cem` queue."""
