@@ -76,11 +76,13 @@ class WebSocketHandler:
             default_control_type=ControlType.FILL_RATE_BASED_CONTROL,
             logger=_WS_LOGGER,
             timers=hass.data[DOMAIN][TIMERS],
+            timezone=hass.config.time_zone,
         )
         frbc_data: FRBC_Config = hass.data[DOMAIN][FRBC_CONFIG]
         frbc = FillRateBasedControlTUNES(
             **asdict(frbc_data),
             timers=hass.data[DOMAIN][TIMERS],
+            timezone=hass.config.time_zone,
         )
         hass.data[DOMAIN]["cem"] = self.cem
         self.cem.register_control_type(frbc)
