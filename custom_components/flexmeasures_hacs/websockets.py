@@ -71,14 +71,21 @@ class WebSocketHandler:
         self._logger.debug("new websockets connection")
         self._logger.warning(hass.data[DOMAIN][FM_CLIENT])
 
+        frbc_data: FRBC_Config = hass.data[DOMAIN][FRBC_CONFIG]
         self.cem = CEM(
             fm_client=hass.data[DOMAIN][FM_CLIENT],
             default_control_type=ControlType.FILL_RATE_BASED_CONTROL,
             logger=_WS_LOGGER,
             timers=hass.data[DOMAIN][TIMERS],
+            power_sensor_id={
+                # todo: set up the other power sensors
+                # "ELECTRIC.POWER.3_PHASE_SYMMETRIC": frbc_data.<id>,  # THP
+                "ELECTRIC.POWER.L1": frbc_data.consumption_sensor_id,  # NES
+                # "ELECTRIC.POWER.L2": frbc_data.<id>,
+                # "ELECTRIC.POWER.L3": frbc_data.<id>,
+            },
             timezone=hass.config.time_zone,
         )
-        frbc_data: FRBC_Config = hass.data[DOMAIN][FRBC_CONFIG]
         frbc = FillRateBasedControlTUNES(
             **asdict(frbc_data),
             timers=hass.data[DOMAIN][TIMERS],

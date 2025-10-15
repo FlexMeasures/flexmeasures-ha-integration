@@ -13,6 +13,8 @@ class FRBC_Config:
     soc_minima_sensor_id: int
     soc_maxima_sensor_id: int
 
+    # power_sensor_id: int
+
     consumption_sensor_id: int
     production_sensor_id: int
 
