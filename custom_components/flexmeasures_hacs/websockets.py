@@ -19,7 +19,7 @@ from s2python.common import EnergyManagementRole, Handshake, ControlType
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, FM_CLIENT, FRBC_CONFIG, TIMERS, WS_VIEW_NAME, WS_VIEW_URI
+from .const import DATASTORE, DOMAIN, FM_CLIENT, FRBC_CONFIG, TIMERS, WS_VIEW_NAME, WS_VIEW_URI
 from .control_types import FRBC_Config
 
 _WS_LOGGER: Final = logging.getLogger(f"{__name__}.connection")
@@ -77,6 +77,7 @@ class WebSocketHandler:
             default_control_type=ControlType.FILL_RATE_BASED_CONTROL,
             logger=_WS_LOGGER,
             timers=hass.data[DOMAIN][TIMERS],
+            datastore=hass.data[DOMAIN][DATASTORE],
             power_sensor_id={
                 # todo: set up the other power sensors
                 # "ELECTRIC.POWER.3_PHASE_SYMMETRIC": frbc_data.<id>,  # THP
@@ -89,6 +90,7 @@ class WebSocketHandler:
         frbc = FillRateBasedControlTUNES(
             **asdict(frbc_data),
             timers=hass.data[DOMAIN][TIMERS],
+            datastore=hass.data[DOMAIN][DATASTORE],
             timezone=hass.config.time_zone,
         )
         hass.data[DOMAIN]["cem"] = self.cem
