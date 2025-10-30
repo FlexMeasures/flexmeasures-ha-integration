@@ -170,11 +170,34 @@ class PersistentDatastore(dict):
         await self._store.async_save(dict(self))
 
     def _schedule_save(self):
-        if self._save_handle:
-            self._save_handle()  # cancel previous
-        self._save_handle = async_call_later(
-            self.hass, self._save_delay, lambda _: self.hass.async_create_task(self.async_save())
-        )
+        """Schedule a debounced save in the main event loop (thread-safe)."""
+
+        def _do_schedule():
+            if self._save_handle:
+                # Cancel previous scheduled save
+                self._save_handle()
+            self._save_handle = async_call_later(
+                self.hass,
+                self._save_delay,
+                lambda _: self.hass.async_create_task(self.async_save())
+            )
+
+        # If we're already on the event loop, schedule directly.
+        # Otherwise, marshal this scheduling onto the loop thread.
+        try:
+            loop = self.hass.loop
+            if loop.is_running():
+                current_loop = asyncio.get_event_loop()
+                if current_loop is loop:
+                    _do_schedule()
+                else:
+                    loop.call_soon_threadsafe(_do_schedule)
+            else:
+                # Very early in startup (loop not running yet)
+                _do_schedule()
+        except RuntimeError:
+            # get_event_loop() may fail if no loop in this thread
+            self.hass.loop.call_soon_threadsafe(_do_schedule)
 
     def __setitem__(self, key, value):
         super().__setitem__(key, value)
