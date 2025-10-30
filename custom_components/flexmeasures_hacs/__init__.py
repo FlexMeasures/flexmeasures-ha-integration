@@ -12,6 +12,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigValidationError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.storage import Store
 
 from .config_flow import get_host_and_ssl_from_url
@@ -77,8 +78,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][TIMERS] = {}
 
     # Create a persistent datastore
-    store = Store(hass, version=1, key=f"{DOMAIN}_datastore")
-    datastore = await store.async_load() or {}
+    datastore = PersistentDatastore(hass, DOMAIN)
+    await datastore.async_load()
     hass.data[DOMAIN][DATASTORE] = datastore
 
     hass.http.register_view(WebsocketAPIView(entry))
@@ -145,3 +146,41 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
     )
 
     return True
+
+
+class PersistentDatastore(dict):
+    def __init__(self, hass, domain: str, version: int = 1, save_delay: float = 5.0):
+        super().__init__()
+        self.hass = hass
+        self._store = Store(hass, version=version, key=f"{domain}_datastore")
+        self._initialized = False
+        self._save_handle = None
+        self._save_delay = save_delay
+
+    async def async_load(self):
+        data = await self._store.async_load() or {}
+        self.clear()
+        self.update(data)
+        self._initialized = True
+
+    async def async_save(self):
+        if not self._initialized:
+            raise RuntimeError("Datastore not loaded yet")
+        await self._store.async_save(dict(self))
+
+    def _schedule_save(self):
+        if self._save_handle:
+            self._save_handle()  # cancel previous
+        self._save_handle = async_call_later(
+            self.hass, self._save_delay, lambda _: self.hass.async_create_task(self.async_save())
+        )
+
+    def __setitem__(self, key, value):
+        super().__setitem__(key, value)
+        if self._initialized:
+            self._schedule_save()
+
+    def __delitem__(self, key):
+        super().__delitem__(key)
+        if self._initialized:
+            self._schedule_save()
