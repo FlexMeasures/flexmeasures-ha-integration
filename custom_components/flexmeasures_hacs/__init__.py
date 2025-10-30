@@ -12,6 +12,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigValidationError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.storage import Store
 
 from .config_flow import get_host_and_ssl_from_url
 from .const import DATASTORE, DOMAIN, FM_CLIENT, FRBC_CONFIG, TIMERS
@@ -74,8 +75,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data[DOMAIN][FM_CLIENT] = client
     hass.data[DOMAIN][TIMERS] = {}
-    if DATASTORE not in hass.data[DOMAIN]:
-        hass.data[DOMAIN][DATASTORE] = {}
+
+    # Create a persistent datastore
+    store = Store(hass, version=1, key=f"{DOMAIN}_datastore")
+    datastore = await store.async_load() or {}
+    hass.data[DOMAIN][DATASTORE] = datastore
 
     hass.http.register_view(WebsocketAPIView(entry))
 
