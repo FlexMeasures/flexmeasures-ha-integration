@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import fields
+import asyncio
 import logging
 
 from flexmeasures_client import FlexMeasuresClient
@@ -178,9 +179,19 @@ class PersistentDatastore(dict):
     def __setitem__(self, key, value):
         super().__setitem__(key, value)
         if self._initialized:
-            self._schedule_save()
+            if self.hass.loop.is_running() and not asyncio.get_event_loop().is_running():
+                # We are in a worker thread
+                self.hass.loop.call_soon_threadsafe(self._schedule_save)
+            else:
+                # Already in main loop
+                self._schedule_save()
 
     def __delitem__(self, key):
         super().__delitem__(key)
         if self._initialized:
-            self._schedule_save()
+            if self.hass.loop.is_running() and not asyncio.get_event_loop().is_running():
+                # We are in a worker thread
+                self.hass.loop.call_soon_threadsafe(self._schedule_save)
+            else:
+                # Already in main loop
+                self._schedule_save()
