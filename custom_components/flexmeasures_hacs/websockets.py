@@ -72,6 +72,7 @@ class WebSocketHandler:
         self._logger.warning(hass.data[DOMAIN][FM_CLIENT])
 
         frbc_data: FRBC_Config = hass.data[DOMAIN][FRBC_CONFIG]
+        self._logger.info(f"Resource in FRBC mode mapped to FlexMeasures asset {frbc_data.asset_id}.")
         self.cem = CEM(
             fm_client=hass.data[DOMAIN][FM_CLIENT],
             default_control_type=ControlType.FILL_RATE_BASED_CONTROL,
