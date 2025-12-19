@@ -10,6 +10,8 @@ from datetime import timedelta
 class FRBC_Config:
     """Dataclass for FRBC configuration."""
 
+    asset_id: int
+
     soc_minima_sensor_id: int
     soc_maxima_sensor_id: int
 
