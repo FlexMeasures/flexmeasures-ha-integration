@@ -17,6 +17,7 @@ from flexmeasures_client.s2.utils import get_unique_id
 from s2python.common import EnergyManagementRole, Handshake, ControlType
 
 from homeassistant.components.http import HomeAssistantView
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, WS_VIEW_NAME, WS_VIEW_URI
@@ -32,7 +33,7 @@ class WebsocketAPIView(HomeAssistantView):
     url: str = WS_VIEW_URI
     requires_auth: bool = False
 
-    def __init__(self, entry) -> None:
+    def __init__(self, entry: ConfigEntry) -> None:
         """Initialize websocket view."""
         super().__init__()
         self.entry = entry
@@ -60,7 +61,9 @@ class WebSocketHandler:
 
     cem: CEM
 
-    def __init__(self, hass: HomeAssistant, entry, request: web.Request) -> None:
+    def __init__(
+        self, hass: HomeAssistant, entry: ConfigEntry, request: web.Request
+    ) -> None:
         """Initialize an active connection."""
         self.hass = hass
         self.request = request
@@ -71,13 +74,13 @@ class WebSocketHandler:
         self._logger.debug("new websockets connection")
 
         self.cem = CEM(
-            fm_client=hass.data[DOMAIN]["fm_client"],
+            fm_client=hass.data[DOMAIN][entry.entry_id]["fm_client"],
             default_control_type=ControlType.FILL_RATE_BASED_CONTROL,
             logger=_WS_LOGGER,
         )
-        frbc_data: FRBC_Config = hass.data[DOMAIN]["frbc_config"]
+        frbc_data: FRBC_Config = hass.data[DOMAIN][entry.entry_id]["frbc_config"]
         frbc = FillRateBasedControlTUNES(**asdict(frbc_data))
-        hass.data[DOMAIN]["cem"] = self.cem
+        hass.data[DOMAIN][entry.entry_id]["cem"] = self.cem
         self.cem.register_control_type(frbc)
 
     async def _websocket_producer(self):

@@ -42,13 +42,15 @@ async def setup_fm_integration(hass: HomeAssistant):
             "soc_min": 0.0,
             "soc_max": 0.001,
         },
-        unique_id=1212121,
         state=ConfigEntryState.NOT_LOADED,
     )
 
     entry.add_to_hass(hass)
     assert await async_setup_component(hass, DOMAIN, {})
     await hass.async_block_till_done()
+    assert entry.entry_id in hass.data[DOMAIN]
+    print(f"ENTRY ID = {entry.entry_id}")
+    print(f"HASS DATA FOR OUR DOMAIN = {hass.data[DOMAIN]}")
 
     return entry
 

@@ -21,9 +21,9 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Set up sensor."""
-    hass.data[DOMAIN][SCHEDULE_STATE] = {"schedule": [], "start": None}
+    hass.data[DOMAIN][entry.entry_id][SCHEDULE_STATE] = {"schedule": [], "start": None}
 
-    async_add_entities([FlexMeasuresScheduleSensor()], True)
+    async_add_entities([FlexMeasuresScheduleSensor(entry_id=entry.entry_id)], True)
 
 
 class FlexMeasuresScheduleSensor(SensorEntity):
@@ -32,9 +32,10 @@ class FlexMeasuresScheduleSensor(SensorEntity):
     _attr_device_class = SensorDeviceClass.POWER
     _attr_native_unit_of_measurement = UnitOfPower.KILO_WATT
 
-    def __init__(self) -> None:
+    def __init__(self, entry_id) -> None:
         """Sensor to store the schedule created by FlexMeasures."""
         self._attr_unique_id = SCHEDULE_ENTITY
+        self.entry_id = entry_id
 
     @property
     def name(self) -> str:
@@ -45,7 +46,7 @@ class FlexMeasuresScheduleSensor(SensorEntity):
     def native_value(self) -> float:
         """Average power."""
 
-        commands = self.hass.data[DOMAIN][SCHEDULE_STATE]["schedule"]
+        commands = self.hass.data[DOMAIN][self.entry_id][SCHEDULE_STATE]["schedule"]
         if len(commands) == 0:
             return 0
         return sum(command["value"] for command in commands) / len(commands)
@@ -53,7 +54,7 @@ class FlexMeasuresScheduleSensor(SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return default attributes for the FlexMeasures Schedule sensor."""
-        return self.hass.data[DOMAIN][SCHEDULE_STATE]
+        return self.hass.data[DOMAIN][self.entry_id][SCHEDULE_STATE]
 
     async def async_added_to_hass(self) -> None:
         """Register callbacks."""
