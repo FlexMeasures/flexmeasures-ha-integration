@@ -19,7 +19,15 @@ from s2python.common import EnergyManagementRole, Handshake, ControlType
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
 
-from .const import DATASTORE, DOMAIN, FM_CLIENT, FRBC_CONFIG, TIMERS, WS_VIEW_NAME, WS_VIEW_URI
+from .const import (
+    DATASTORE,
+    DOMAIN,
+    FM_CLIENT,
+    FRBC_CONFIG,
+    TIMERS,
+    WS_VIEW_NAME,
+    WS_VIEW_URI,
+)
 from .control_types import FRBC_Config
 
 _WS_LOGGER: Final = logging.getLogger(f"{__name__}.connection")
@@ -72,7 +80,9 @@ class WebSocketHandler:
         self._logger.warning(hass.data[DOMAIN][FM_CLIENT])
 
         frbc_data: FRBC_Config = hass.data[DOMAIN][FRBC_CONFIG]
-        self._logger.info(f"Resource in FRBC mode mapped to FlexMeasures asset {frbc_data.asset_id}.")
+        self._logger.info(
+            f"Resource in FRBC mode mapped to FlexMeasures asset {frbc_data.asset_id}."
+        )
         self.cem = CEM(
             fm_client=hass.data[DOMAIN][FM_CLIENT],
             default_control_type=ControlType.FILL_RATE_BASED_CONTROL,
@@ -109,7 +119,9 @@ class WebSocketHandler:
             try:
                 await self.wsock.send_json(message)
             except ConnectionResetError:
-                self._logger.debug("Connection reset in _websocket_producer: closing CEM..")
+                self._logger.debug(
+                    "Connection reset in _websocket_producer: closing CEM.."
+                )
                 await cem.close()
 
     async def _websocket_consumer(self):
@@ -137,7 +149,9 @@ class WebSocketHandler:
                         await cem.handle_message(message)
 
                 elif msg.type == aiohttp.WSMsgType.ERROR:
-                    self._logger.debug("Msg.type == aiohttp.WSMsgType.ERROR: closing CEM..")
+                    self._logger.debug(
+                        "Msg.type == aiohttp.WSMsgType.ERROR: closing CEM.."
+                    )
                     await cem.close()
         except Exception:  # pylint: disable=broad-exception-caught
             self.entry.async_start_reauth(self.hass)
