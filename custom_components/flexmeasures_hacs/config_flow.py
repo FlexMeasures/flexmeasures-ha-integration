@@ -176,7 +176,7 @@ class ConfigFlowHandler(SchemaConfigFlowHandler, domain=DOMAIN):
 
     reauth_entry: ConfigEntry
 
-    VERSION = 2
+    VERSION = 3
 
     def async_config_entry_title(self, options: Mapping[str, Any]) -> str:
         """Return config entry title."""

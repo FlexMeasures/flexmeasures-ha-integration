@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import fields
-import asyncio
 import logging
 
 from flexmeasures_client import FlexMeasuresClient
@@ -13,7 +12,6 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigValidationError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.storage import Store
 
 from .config_flow import get_host_and_ssl_from_url
@@ -121,7 +119,7 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
         config_entry.minor_version,
     )
 
-    if config_entry.version > 2:
+    if config_entry.version > 3:
         # This means the user has downgraded from a future version
         return False
 
@@ -139,6 +137,41 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
                 new_data["s2"][field_name] = field.default()
 
         hass.config_entries.async_update_entry(config_entry, data=new_data, version=2)
+
+    if config_entry.version == 2:
+        # v3 renames the misspelled leakage_beaviour_sensor_id (which client
+        # versions >=0.8 no longer accept) and fills S2 fields that did not
+        # exist when the entry was created (e.g. asset_id).
+        from .config_flow import S2_SCHEMA
+
+        def migrate_s2_section(s2: dict, fill_defaults: bool) -> dict:
+            s2 = {**s2}
+            if "leakage_beaviour_sensor_id" in s2:
+                s2.setdefault(
+                    "leakage_behaviour_sensor_id",
+                    s2.pop("leakage_beaviour_sensor_id"),
+                )
+            if fill_defaults:
+                for field in S2_SCHEMA.schema.keys():
+                    field_name = str(field)
+                    if field_name not in s2 and hasattr(field, "default"):
+                        s2[field_name] = field.default()
+            return s2
+
+        new_data = {**config_entry.data}
+        if "s2" in new_data:
+            new_data["s2"] = migrate_s2_section(new_data["s2"], fill_defaults=True)
+        new_options = {**config_entry.options}
+        if "s2" in new_options:
+            # Options override data per key, so only rename here; missing keys
+            # fall back to the defaults filled into data above.
+            new_options["s2"] = migrate_s2_section(
+                new_options["s2"], fill_defaults=False
+            )
+
+        hass.config_entries.async_update_entry(
+            config_entry, data=new_data, options=new_options, version=3
+        )
 
     _LOGGER.debug(
         "Migration to configuration version %s.%s successful",
