@@ -101,8 +101,8 @@ SCHEMA = vol.Schema(
         ): int,
         vol.Optional("soc_sensor", description={"suggested_value": 4}): int,
         vol.Optional("soc_unit", default="kWh"): str,
-        vol.Optional("soc_min", default=10.1): float,
-        vol.Optional("soc_max", default=1.1): float,
+        vol.Optional("soc_min", default=10.1): vol.Coerce(float),
+        vol.Optional("soc_max", default=1.1): vol.Coerce(float),
         vol.Optional("s2"): section(S2_SCHEMA, {"collapsed": True}),
     }
 )
