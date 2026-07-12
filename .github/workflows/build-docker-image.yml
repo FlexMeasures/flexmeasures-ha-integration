@@ -7,13 +7,24 @@ on:
       - 'v[0-9]+\.[0-9]+\.[0-9]+'  # Match tags that resemble a version
 
 jobs:
-  docker:
+  release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
       repository-projects: write
     steps:
+      - uses: actions/checkout@v4
+      - name: Check that the manifest version matches the tag
+        # The v0.3.7 tag shipped a manifest that still said 0.3.6. HACS shows
+        # users the manifest version, so a mismatch is confusing at best.
+        run: |
+          manifest_version=$(jq -r .version custom_components/flexmeasures_hacs/manifest.json)
+          tag_version="${GITHUB_REF_NAME#v}"
+          if [ "$manifest_version" != "$tag_version" ]; then
+            echo "::error::manifest.json version ($manifest_version) does not match tag ($tag_version). Bump the manifest before tagging."
+            exit 1
+          fi
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
