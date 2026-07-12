@@ -1,0 +1,7 @@
+default_config:
+
+logger:
+  default: info
+  logs:
+    custom_components.flexmeasures_hacs: debug
+    flexmeasures_client: debug

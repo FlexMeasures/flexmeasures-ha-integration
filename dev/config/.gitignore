@@ -1,0 +1,5 @@
+# Home Assistant writes its runtime state (database, .storage, logs) into
+# this directory; only the checked-in configuration.yaml belongs in git.
+*
+!.gitignore
+!configuration.yaml
