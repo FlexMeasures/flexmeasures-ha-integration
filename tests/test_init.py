@@ -88,3 +88,48 @@ async def test_two_entries_keep_their_own_state(
     await hass.config_entries.async_unload(second.entry_id)
     await hass.async_block_till_done()
     assert hass.services.has_service(DOMAIN, "trigger_and_get_schedule")
+
+
+async def test_warns_when_the_flexmeasures_server_is_too_old(
+    hass: HomeAssistant, caplog
+) -> None:
+    """An old FlexMeasures server makes the sensor-data services 404 at call time.
+
+    flexmeasures-client >=0.8 uses endpoints that FlexMeasures only serves from
+    0.28.0 on, so say so at startup instead of letting an automation find out.
+    """
+    from .conftest import build_entry
+
+    entry = build_entry(unique_id="oldserver")
+    entry.add_to_hass(hass)
+
+    with patch(
+        "flexmeasures_client.client.FlexMeasuresClient.get_versions",
+        return_value={"server_version": "0.25.0"},
+    ):
+        await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert entry.state == ConfigEntryState.LOADED  # a warning, not a failure
+    assert "0.25.0" in caplog.text
+    assert "0.28.0 or above" in caplog.text
+
+
+async def test_no_warning_for_a_recent_flexmeasures_server(
+    hass: HomeAssistant, caplog
+) -> None:
+    """A recent enough server must not produce the version warning."""
+    from .conftest import build_entry
+
+    entry = build_entry(unique_id="newserver")
+    entry.add_to_hass(hass)
+
+    with patch(
+        "flexmeasures_client.client.FlexMeasuresClient.get_versions",
+        return_value={"server_version": "0.33.1"},
+    ):
+        await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert entry.state == ConfigEntryState.LOADED
+    assert "or above" not in caplog.text

@@ -121,6 +121,12 @@ data:
   soc_at_start: "\{\{ state_attr\('SENSOR_TYPE.SENSOR', 'SENSOR_ATTRIBUTES'\) \}\}"
 ```
 
+## Which FlexMeasures server version you need
+
+This integration ships flexmeasures-client 0.9.x, which posts and reads sensor data through endpoints that FlexMeasures serves from **0.28.0** on (triggering a schedule needs **0.27.0**). Against an older server, the integration still loads, but `post_measurements` and `get_measurements` fail when they are called. The integration logs a warning at startup when it finds a server that is too old.
+
+Integration versions up to v0.3.6 shipped client 0.7.0, which still used the deprecated endpoints — so this is worth checking before upgrading from v0.3.6 or earlier.
+
 ## Several FlexMeasures servers
 
 You can add the integration more than once, to talk to several FlexMeasures servers (or several accounts on one server) from the same Home Assistant. Each entry gets its own device, its own schedule sensor and its own S2 session.

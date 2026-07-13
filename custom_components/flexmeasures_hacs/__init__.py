@@ -13,6 +13,7 @@ from homeassistant.exceptions import ConfigValidationError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
+from packaging.version import Version
 
 from .config_flow import get_host_and_ssl_from_url
 from .const import DOMAIN, SCHEDULE_ENTITY
@@ -34,6 +35,13 @@ from .websockets import async_register_websocket_view
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
+
+# flexmeasures-client >=0.8 posts and reads sensor data through endpoints that
+# FlexMeasures only serves from 0.28.0 on (scheduling needs 0.27.0). Against an
+# older server those calls 404 at the moment a service runs, so check the server
+# version once at startup and say so, rather than let a nightly automation be
+# the one to find out.
+MINIMUM_SERVER_VERSION = "0.28.0"
 
 # Fields of FRBC_Config that live outside the "s2" section of the config entry.
 NON_S2_FIELDS = (
@@ -90,7 +98,39 @@ async def async_setup_entry(
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     async_setup_services(hass)
 
+    entry.async_create_background_task(
+        hass,
+        _async_check_server_version(client),
+        name=f"{DOMAIN}_check_server_version",
+    )
+
     return True
+
+
+async def _async_check_server_version(client: FlexMeasuresClient) -> None:
+    """Warn when the FlexMeasures server is too old for the client we ship.
+
+    Deliberately does not block or fail the setup: an unreachable server is a
+    separate problem, and the schedule sensor and the S2 path are useful even
+    while we cannot tell the version.
+    """
+    try:
+        versions = await client.get_versions()
+        server_version = versions.get("server_version")
+        if server_version is None:
+            return
+        if Version(server_version) < Version(MINIMUM_SERVER_VERSION):
+            _LOGGER.warning(
+                "This FlexMeasures server runs version %s, but posting and reading"
+                " sensor data needs %s or above (scheduling needs 0.27.0). Those"
+                " service calls will fail until the server is upgraded",
+                server_version,
+                MINIMUM_SERVER_VERSION,
+            )
+    except Exception:
+        _LOGGER.debug(
+            "Could not determine the FlexMeasures server version", exc_info=True
+        )
 
 
 async def options_update_listener(
