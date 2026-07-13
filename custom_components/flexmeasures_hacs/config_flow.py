@@ -26,6 +26,12 @@ from .const import DOMAIN
 S2_SCHEMA = vol.Schema(
     {
         vol.Optional(
+            "asset_id", default=113, description={"suggested_value": 113}
+        ): int,
+        vol.Optional(
+            "consumption_sensor_id", default=357, description={"suggested_value": 357}
+        ): int,
+        vol.Optional(
             "soc_minima_sensor_id", default=218, description={"suggested_value": 218}
         ): int,
         vol.Optional(
@@ -70,7 +76,7 @@ S2_SCHEMA = vol.Schema(
             "state_of_charge_sensor_id", default=2, description={"suggested_value": 2}
         ): int,
         vol.Optional(
-            "leakage_beaviour_sensor_id",
+            "leakage_behaviour_sensor_id",
             default=213,
             description={"suggested_value": 213},
         ): int,
@@ -170,7 +176,7 @@ class ConfigFlowHandler(SchemaConfigFlowHandler, domain=DOMAIN):
 
     reauth_entry: ConfigEntry
 
-    VERSION = 2
+    VERSION = 3
 
     def async_config_entry_title(self, options: Mapping[str, Any]) -> str:
         """Return config entry title."""

@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "core.config_entries",
+  "data": {
+    "entries": [
+      {
+        "entry_id": "smoketestflexmeasures0000000001",
+        "version": 2,
+        "minor_version": 1,
+        "domain": "flexmeasures_hacs",
+        "title": "FlexMeasures",
+        "data": {
+          "url": "http://localhost:5000",
+          "username": "smoke@example.com",
+          "password": "smoke-test-password",
+          "power_sensor": 5,
+          "schedule_duration": "PT24H",
+          "consumption_price_sensor": 2,
+          "production_price_sensor": 2,
+          "soc_unit": "kWh",
+          "soc_min": 0.0,
+          "soc_max": 0.001,
+          "s2": {
+            "soc_minima_sensor_id": 218,
+            "soc_maxima_sensor_id": 217,
+            "fill_level_sensor_id": 215,
+            "fill_rate_sensor_id": 214,
+            "usage_forecast_sensor_id": 229,
+            "thp_fill_rate_sensor_id": 226,
+            "thp_efficiency_sensor_id": 225,
+            "nes_fill_rate_sensor_id": 222,
+            "nes_efficiency_sensor_id": 221,
+            "active_actuator_id_sensor_id": 222,
+            "rm_discharge_sensor_id": 213,
+            "state_of_charge_sensor_id": 2,
+            "leakage_beaviour_sensor_id": 213
+          }
+        },
+        "options": {},
+        "pref_disable_new_entities": false,
+        "pref_disable_polling": false,
+        "source": "user",
+        "unique_id": null,
+        "disabled_by": null
+      }
+    ]
+  }
+}

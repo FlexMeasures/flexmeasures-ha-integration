@@ -1,0 +1,68 @@
+name: Smoke test (real Home Assistant)
+
+# Boots a real Home Assistant container with the integration mounted and a
+# pre-seeded config entry (an old v2 entry, so the entry migration runs), then
+# asserts that the integration sets up and serves the S2 CEM handshake.
+#
+# This catches what in-process pytest cannot: whether the requirements in
+# manifest.json actually install inside Home Assistant. v0.3.7 shipped with a
+# manifest pinning a client version the code could not work with — tests were
+# green, every real install was broken.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * *"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    name: "Smoke (HA ${{ matrix.ha-image }})"
+    strategy:
+      fail-fast: false
+      matrix:
+        # PR/push runs test only the pinned tag (keep in sync with
+        # dev/docker-compose.yml); the nightly cron and manual runs also test
+        # the moving `stable` tag, as an early warning without blocking PRs.
+        ha-image: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && fromJSON('["2026.7.2", "stable"]') || fromJSON('["2026.7.2"]') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare Home Assistant config
+        run: |
+          mkdir -p /tmp/ha-config
+          cp -r tests/smoke/config/. /tmp/ha-config/
+          cp -r custom_components /tmp/ha-config/custom_components
+
+      - name: Start Home Assistant
+        run: |
+          docker run -d --name ha \
+            -p 8123:8123 \
+            -v /tmp/ha-config:/config \
+            homeassistant/home-assistant:${{ matrix.ha-image }}
+
+      - name: Await S2 CEM handshake on the integration's websocket
+        run: |
+          pip install aiohttp
+          python3 tests/smoke/ws_check.py
+
+      - name: Show Home Assistant log
+        if: always()
+        run: docker logs ha 2>&1 | tail -200
+
+      - name: Assert clean setup in the log
+        if: always()
+        run: |
+          docker logs ha > ha.log 2>&1
+          grep -q "Setting up flexmeasures_hacs" ha.log
+          grep -q "Migrating configuration from version 2" ha.log
+          ! grep -E "ERROR.*(flexmeasures_hacs|flexmeasures_client)" ha.log
+
+      - name: Check dependency consistency inside Home Assistant
+        # Informational: the base image may ship pre-existing conflicts we
+        # don't control, so this never fails the job. Read it when debugging.
+        continue-on-error: true
+        run: docker exec ha python3 -m pip check

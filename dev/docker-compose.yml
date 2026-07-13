@@ -1,0 +1,70 @@
+# Local development environment: a real Home Assistant with this integration
+# mounted, for verifying behavior that in-process tests cannot catch (e.g.
+# whether the manifest requirements actually install inside HA).
+#
+#   cd dev
+#   docker compose up
+#
+# Home Assistant: http://localhost:8123 (complete onboarding on first run).
+# The integration is mounted read-only from the working tree, so code changes
+# only need an HA restart: docker compose restart homeassistant
+#
+# By default this expects a FlexMeasures server running natively on the host
+# at port 5000; configure the integration with url http://host.docker.internal:5000
+#
+# No native FlexMeasures? Start the optional backend too:
+#
+#   docker compose --profile backend up
+#
+# and configure the integration with url http://flexmeasures:5000
+# See the README for seeding the backend with an account and sensors.
+
+services:
+  homeassistant:
+    # Pin the tag; bump deliberately. The nightly CI smoke job tracks
+    # homeassistant/home-assistant:stable to warn about drift early.
+    image: homeassistant/home-assistant:2026.7.2
+    ports:
+      - "8123:8123"
+    volumes:
+      - ./config:/config
+      - ../custom_components/flexmeasures_hacs:/config/custom_components/flexmeasures_hacs:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - TZ=Europe/Amsterdam
+    restart: unless-stopped
+
+  flexmeasures:
+    profiles: ["backend"]
+    image: lfenergy/flexmeasures:latest
+    ports:
+      - "5000:5000"
+    depends_on:
+      backend-db:
+        condition: service_healthy
+    environment:
+      SQLALCHEMY_DATABASE_URI: postgresql://fm-db-user:fm-db-pass@backend-db:5432/fm-db
+      SECRET_KEY: notsecret-dev-only
+      SECURITY_TOTP_SECRETS: '{"1": "notsecret-dev-only"}'
+      FLEXMEASURES_ENV: development
+      LOGGING_LEVEL: INFO
+    command: >
+      bash -c "flexmeasures db upgrade
+      && flexmeasures run --host 0.0.0.0 --port 5000"
+    restart: on-failure
+
+  backend-db:
+    profiles: ["backend"]
+    image: postgres:17
+    expose:
+      - 5432
+    environment:
+      POSTGRES_DB: fm-db
+      POSTGRES_USER: fm-db-user
+      POSTGRES_PASSWORD: fm-db-pass
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fm-db-user -d fm-db"]
+      interval: 10s
+      timeout: 5s
+      retries: 3

@@ -19,7 +19,15 @@ from s2python.common import EnergyManagementRole, Handshake, ControlType
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, WS_VIEW_NAME, WS_VIEW_URI
+from .const import (
+    DATASTORE,
+    DOMAIN,
+    FM_CLIENT,
+    FRBC_CONFIG,
+    TIMERS,
+    WS_VIEW_NAME,
+    WS_VIEW_URI,
+)
 from .control_types import FRBC_Config
 
 _WS_LOGGER: Final = logging.getLogger(f"{__name__}.connection")
@@ -69,14 +77,33 @@ class WebSocketHandler:
 
         self._logger = WebSocketAdapter(_WS_LOGGER, {"connid": id(self)})
         self._logger.debug("new websockets connection")
+        self._logger.warning(hass.data[DOMAIN][FM_CLIENT])
 
+        frbc_data: FRBC_Config = hass.data[DOMAIN][FRBC_CONFIG]
+        self._logger.info(
+            f"Resource in FRBC mode mapped to FlexMeasures asset {frbc_data.asset_id}."
+        )
         self.cem = CEM(
-            fm_client=hass.data[DOMAIN]["fm_client"],
+            fm_client=hass.data[DOMAIN][FM_CLIENT],
             default_control_type=ControlType.FILL_RATE_BASED_CONTROL,
             logger=_WS_LOGGER,
+            timers=hass.data[DOMAIN][TIMERS],
+            datastore=hass.data[DOMAIN][DATASTORE],
+            power_sensor_id={
+                # todo: set up the other power sensors
+                # "ELECTRIC.POWER.3_PHASE_SYMMETRIC": frbc_data.<id>,  # THP
+                "ELECTRIC.POWER.L1": frbc_data.consumption_sensor_id,  # NES
+                # "ELECTRIC.POWER.L2": frbc_data.<id>,
+                # "ELECTRIC.POWER.L3": frbc_data.<id>,
+            },
+            timezone=hass.config.time_zone,
         )
-        frbc_data: FRBC_Config = hass.data[DOMAIN]["frbc_config"]
-        frbc = FillRateBasedControlTUNES(**asdict(frbc_data))
+        frbc = FillRateBasedControlTUNES(
+            **asdict(frbc_data),
+            timers=hass.data[DOMAIN][TIMERS],
+            datastore=hass.data[DOMAIN][DATASTORE],
+            timezone=hass.config.time_zone,
+        )
         hass.data[DOMAIN]["cem"] = self.cem
         self.cem.register_control_type(frbc)
 
@@ -92,6 +119,9 @@ class WebSocketHandler:
             try:
                 await self.wsock.send_json(message)
             except ConnectionResetError:
+                self._logger.debug(
+                    "Connection reset in _websocket_producer: closing CEM.."
+                )
                 await cem.close()
 
     async def _websocket_consumer(self):
@@ -112,16 +142,21 @@ class WebSocketHandler:
 
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     if msg.data == "close":
+                        self._logger.debug("Msg.data == 'close': closing CEM..")
                         await cem.close()
                         await self.wsock.close()
                     else:
                         await cem.handle_message(message)
 
                 elif msg.type == aiohttp.WSMsgType.ERROR:
+                    self._logger.debug(
+                        "Msg.type == aiohttp.WSMsgType.ERROR: closing CEM.."
+                    )
                     await cem.close()
         except Exception:  # pylint: disable=broad-exception-caught
             self.entry.async_start_reauth(self.hass)
         finally:
+            self._logger.debug("Finished _websocket_consumer: closing CEM..")
             await cem.close()
 
     async def async_handle(self) -> web.WebSocketResponse:
@@ -140,6 +175,7 @@ class WebSocketHandler:
             )
 
         except ConnectionResetError:
+            self._logger.debug("Connection reset in async_handle: closing CEM..")
             await self.cem.close()
             self.entry.async_start_reauth(self.hass)
 

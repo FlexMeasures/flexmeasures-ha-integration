@@ -120,3 +120,51 @@ service: flexmeasures.trigger_and_get_schedule
 data:
   soc_at_start: "\{\{ state_attr\('SENSOR_TYPE.SENSOR', 'SENSOR_ATTRIBUTES'\) \}\}"
 ```
+
+## Development
+
+### Run the integration in a real Home Assistant (Docker)
+
+The repo ships a Docker-based dev environment that runs a real Home Assistant
+with the integration from your working tree mounted:
+
+```
+cd dev
+docker compose up
+```
+
+Then open http://localhost:8123, complete onboarding, and add the
+"FlexMeasures for HACS" integration. If your FlexMeasures server runs natively
+on the host (port 5000), configure the integration with the URL
+`http://host.docker.internal:5000`. After code changes, restart with
+`docker compose restart homeassistant`.
+
+If you have no FlexMeasures server, start one alongside Home Assistant:
+
+```
+docker compose --profile backend up
+```
+
+and use the URL `http://flexmeasures:5000` in the integration config. Seed the
+backend with an account, user and sensors first, e.g.:
+
+```
+docker compose exec flexmeasures flexmeasures add toy-account
+```
+
+### Tests
+
+Install the test requirements plus the integration requirements from the
+manifest (tests must run against the exact versions Home Assistant installs
+for users; `tests/test_manifest.py` guards this):
+
+```
+pip install -r requirements.test.txt
+pip install $(python3 -c "import json; print(' '.join(json.load(open('custom_components/flexmeasures_hacs/manifest.json'))['requirements']))")
+pytest
+```
+
+CI additionally runs a smoke test (`.github/workflows/smoke.yml`) that boots a
+real Home Assistant container with a pre-seeded config entry and asserts the
+integration migrates, sets up, and serves the S2 CEM handshake — this catches
+manifest/requirement problems that in-process tests cannot.

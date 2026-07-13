@@ -25,6 +25,8 @@ CONFIG = {
 }
 
 S2_CONFIG = {
+    "asset_id": 20,
+    "consumption_sensor_id": 21,
     "soc_minima_sensor_id": 1,
     "soc_maxima_sensor_id": 2,
     "fill_level_sensor_id": 3,
@@ -36,6 +38,8 @@ S2_CONFIG = {
     "nes_efficiency_sensor_id": 9,
     "rm_discharge_sensor_id": 10,
     "active_actuator_id_sensor_id": 15,
+    "state_of_charge_sensor_id": 16,
+    "leakage_behaviour_sensor_id": 17,
 }
 
 
@@ -77,7 +81,7 @@ async def test_form(hass: HomeAssistant) -> None:
 
 
 async def test_migration(hass: HomeAssistant) -> None:
-    """Test migrating v1 config to v2 config to include S2_CONFIG in options."""
+    """Test migrating v1 config to the current version, moving S2_CONFIG into an s2 section."""
 
     # Simulate an old entry with CONFIG in data and some options
     old_entry = MockConfigEntry(
@@ -96,6 +100,47 @@ async def test_migration(hass: HomeAssistant) -> None:
     entries = hass.config_entries.async_entries("flexmeasures_hacs")
 
     assert len(entries) == 1
-    assert entries[0].version == 2
+    assert entries[0].version == 3
     assert "s2" in entries[0].data
     assert all(S2_CONFIG[k] == v for (k, v) in entries[0].data["s2"].items())
+
+
+async def test_migration_v2_to_v3(hass: HomeAssistant) -> None:
+    """Test migrating a v2 entry: rename the misspelled leakage key, fill new S2 fields.
+
+    v2 entries were created by releases up to v0.3.7, whose S2 section used
+    leakage_beaviour_sensor_id (sic) and had no asset_id yet.
+    """
+    old_s2 = {
+        k: v
+        for k, v in S2_CONFIG.items()
+        if k not in ("asset_id", "consumption_sensor_id", "leakage_behaviour_sensor_id")
+    }
+    old_s2["leakage_beaviour_sensor_id"] = 99
+    old_entry = MockConfigEntry(
+        version=2,
+        minor_version=1,
+        domain="flexmeasures_hacs",
+        title="FlexMeasures",
+        data=CONFIG | {"s2": old_s2},
+        options={"s2": {"leakage_beaviour_sensor_id": 99}},
+        source="user",
+    )
+    old_entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(old_entry.entry_id)
+    await hass.async_block_till_done()
+
+    entries = hass.config_entries.async_entries("flexmeasures_hacs")
+
+    assert len(entries) == 1
+    assert entries[0].version == 3
+    s2 = entries[0].data["s2"]
+    # The configured value survives under the corrected key
+    assert "leakage_beaviour_sensor_id" not in s2
+    assert s2["leakage_behaviour_sensor_id"] == 99
+    assert entries[0].options["s2"] == {"leakage_behaviour_sensor_id": 99}
+    # Fields that did not exist in v2 are filled with schema defaults
+    assert "asset_id" in s2
+    assert "consumption_sensor_id" in s2
+    # Pre-existing values are preserved
+    assert s2["soc_minima_sensor_id"] == S2_CONFIG["soc_minima_sensor_id"]

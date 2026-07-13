@@ -30,6 +30,7 @@ import homeassistant.util.dt as dt_util
 
 from .const import (
     DOMAIN,
+    FM_CLIENT,
     RESOLUTION,
     SCHEDULE_STATE,
     SERVICE_CHANGE_CONTROL_TYPE,
@@ -110,7 +111,7 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     async def trigger_and_get_schedule(
         call: ServiceCall,
     ):  # pylint: disable=possibly-unused-variable
-        client: FlexMeasuresClient = hass.data[DOMAIN]["fm_client"]
+        client: FlexMeasuresClient = hass.data[DOMAIN][FM_CLIENT]
         resolution = pd.Timedelta(RESOLUTION)
         tzinfo = dt_util.get_time_zone(hass.config.time_zone)
         start = time_ceil(datetime.now(tz=tzinfo), resolution)
@@ -165,7 +166,7 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     async def post_measurements(
         call: ServiceCall,
     ):  # pylint: disable=possibly-unused-variable
-        client: FlexMeasuresClient = hass.data[DOMAIN]["fm_client"]
+        client: FlexMeasuresClient = hass.data[DOMAIN][FM_CLIENT]
 
         await client.post_measurements(
             sensor_id=call.data.get("sensor_id"),
@@ -210,7 +211,7 @@ async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry) -> None:
     async def get_measurements(
         call: ServiceCall,
     ) -> ServiceResponse:  # pylint: disable=possibly-unused-variable
-        client: FlexMeasuresClient = hass.data[DOMAIN]["fm_client"]
+        client: FlexMeasuresClient = hass.data[DOMAIN][FM_CLIENT]
 
         data_query = dict(
             sensor_id=call.data.get("sensor_id"),

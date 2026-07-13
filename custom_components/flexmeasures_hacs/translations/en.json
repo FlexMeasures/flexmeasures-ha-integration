@@ -44,6 +44,7 @@
                       "name": "S2",
                       "description": "Optional parameters to interface to a S2 resource manager",
                       "data": {
+                        "consumption_sensor_id": "consumption_sensor_id",
                         "fill_level_sensor_id": "fill_level_sensor_id",
                         "fill_rate_sensor_id": "fill_rate_sensor_id",
                         "usage_forecast_sensor_id": "usage_forecast_sensor_id",
@@ -52,19 +53,20 @@
                         "nes_fill_rate_sensor_id": "nes_fill_rate_sensor_id",
                         "nes_efficiency_sensor_id": "nes_efficiency_sensor_id",
                         "rm_discharge_sensor": "Resource Manager Discharge Sensor",
-                        "leakage_beaviour_sensor_id" : "leakage_beaviour_sensor_id",
+                        "leakage_behaviour_sensor_id" : "leakage_behaviour_sensor_id",
                         "state_of_charge_sensor_id" : "state_of_charge_sensor_id"
                       },
                       "data_description": {
+                        "consumption_sensor_id": "Sensor ID to record power consumption.",
                         "fill_level_sensor_id": "Fill level sensor ID of the NES heat storage.",
                         "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
                         "usage_forecast_sensor_id": "Usage Forecast sensor ID.",
                         "thp_fill_rate_sensor_id": "Fill rate sensor ID of the Tarnoc Heat Pump.",
-                        "thp_efficiency_sensor_id": "Tarnoc heat pump coeffient of performance (Thermal Power / Electrical Power).",
+                        "thp_efficiency_sensor_id": "Tarnoc heat pump coefficient of performance (Thermal Power / Electrical Power).",
                         "nes_fill_rate_sensor_id": "Fill rate sensor ID of the Nestore hot water storage internal thermal resistor.",
-                        "nes_efficiency_sensor_id": "Nestore internal resistor coeffient of performance (Thermal Power / Electrical Power).",
+                        "nes_efficiency_sensor_id": "Nestore internal resistor coefficient of performance (Thermal Power / Electrical Power).",
                         "rm_discharge_sensor": "The sensor that provides the resource manager discharge data.",
-                        "leakage_beaviour_sensor_id" : "Sensor ID to record the leakage behaviour.",
+                        "leakage_behaviour_sensor_id" : "Sensor ID to record the leakage behaviour.",
                         "state_of_charge_sensor_id" : "Sensor ID to record the State of Charge of the planned schedule."
                       }
                   }
@@ -72,6 +74,7 @@
             },
             "user": {
                 "data": {
+                    "consumption_sensor_id": "consumption_sensor_id",
                     "consumption_price_sensor": "Consumption price sensor",
                     "fill_level_sensor_id": "fill_level_sensor_id",
                     "fill_rate_sensor_id": "fill_rate_sensor_id",
@@ -94,6 +97,7 @@
                     "username": "Username"
                 },
                 "data_description": {
+                    "consumption_sensor_id": "The sensor that records the power consumption.",
                     "consumption_price_sensor": "The sensor that provides the consumption price data.",
                     "fill_level_sensor_id": "fill_level_sensor_id",
                     "fill_rate_sensor_id": "fill_rate_sensor_id",
@@ -120,6 +124,7 @@
                   "name": "S2",
                   "description": "Optional parameters to interface to a S2 resource manager",
                   "data": {
+                    "consumption_sensor_id": "consumption_sensor_id",
                     "fill_level_sensor_id": "fill_level_sensor_id",
                     "fill_rate_sensor_id": "fill_rate_sensor_id",
                     "usage_forecast_sensor_id": "usage_forecast_sensor_id",
@@ -128,19 +133,20 @@
                     "nes_fill_rate_sensor_id": "nes_fill_rate_sensor_id",
                     "nes_efficiency_sensor_id": "nes_efficiency_sensor_id",
                     "rm_discharge_sensor": "Resource Manager Discharge Sensor",
-                    "leakage_beaviour_sensor_id" : "leakage_beaviour_sensor_id",
+                    "leakage_behaviour_sensor_id" : "leakage_behaviour_sensor_id",
                     "state_of_charge_sensor_id" : "state_of_charge_sensor_id"
                   },
                   "data_description": {
+                    "consumption_sensor_id": "Sensor ID to record power consumption.",
                     "fill_level_sensor_id": "Fill level sensor ID of the NES heat storage.",
                     "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
                     "usage_forecast_sensor_id": "Usage Forecast sensor ID.",
                     "thp_fill_rate_sensor_id": "Fill rate sensor ID of the Tarnoc Heat Pump.",
-                    "thp_efficiency_sensor_id": "Tarnoc heat pump coeffient of performance (Thermal Power / Electrical Power).",
+                    "thp_efficiency_sensor_id": "Tarnoc heat pump coefficient of performance (Thermal Power / Electrical Power).",
                     "nes_fill_rate_sensor_id": "Fill rate sensor ID of the Nestore hot water storage internal thermal resistor.",
-                    "nes_efficiency_sensor_id": "Nestore internal resistor coeffient of performance (Thermal Power / Electrical Power).",
+                    "nes_efficiency_sensor_id": "Nestore internal resistor coefficient of performance (Thermal Power / Electrical Power).",
                     "rm_discharge_sensor": "The sensor that provides the resource manager discharge data.",
-                    "leakage_beaviour_sensor_id" : "Sensor ID to record the leakage behaviour.",
+                    "leakage_behaviour_sensor_id" : "Sensor ID to record the leakage behaviour.",
                     "state_of_charge_sensor_id" : "Sensor ID to record the State of Charge of the planned schedule."
                   }
               }
@@ -168,6 +174,7 @@
         "step": {
             "init": {
                 "data": {
+                    "consumption_sensor_id": "consumption_sensor_id",
                     "consumption_price_sensor": "Consumption price sensor",
                     "fill_level_sensor_id": "fill_level_sensor_id",
                     "fill_rate_sensor_id": "fill_rate_sensor_id",
@@ -191,6 +198,7 @@
                     "username": "Username"
                 },
                 "data_description": {
+                    "consumption_sensor_id": "consumption_sensor_id",
                     "consumption_price_sensor": "The sensor that provides the consumption price data.",
                     "fill_level_sensor_id": "fill_level_sensor_id",
                     "fill_rate_sensor_id": "fill_rate_sensor_id",
@@ -218,6 +226,7 @@
                   "name": "S2",
                   "description": "Optional parameters to interface to a S2 resource manager",
                   "data": {
+                    "consumption_sensor_id": "consumption_sensor_id",
                     "fill_level_sensor_id": "fill_level_sensor_id",
                     "fill_rate_sensor_id": "fill_rate_sensor_id",
                     "usage_forecast_sensor_id": "usage_forecast_sensor_id",
@@ -227,20 +236,21 @@
                     "nes_efficiency_sensor_id": "nes_efficiency_sensor_id",
                     "rm_discharge_sensor": "Resource Manager Discharge Sensor",
                     "active_actuator_id_sensor_id" : "active_actuator_id_sensor_id",
-                    "leakage_beaviour_sensor_id" : "leakage_beaviour_sensor_id",
+                    "leakage_behaviour_sensor_id" : "leakage_behaviour_sensor_id",
                     "state_of_charge_sensor_id" : "state_of_charge_sensor_id"
                   },
                   "data_description": {
+                    "consumption_sensor_id": "Sensor ID to record power consumption",
                     "fill_level_sensor_id": "Fill level sensor ID of the NES heat storage.",
                     "fill_rate_sensor_id": "Fill rate sensor ID of the active actuator (THP or NES internal resitor).",
                     "usage_forecast_sensor_id": "Usage Forecast sensor ID.",
                     "thp_fill_rate_sensor_id": "Fill rate sensor ID of the Tarnoc Heat Pump.",
-                    "thp_efficiency_sensor_id": "Tarnoc heat pump coeffient of performance (Thermal Power / Electrical Power).",
+                    "thp_efficiency_sensor_id": "Tarnoc heat pump coefficient of performance (Thermal Power / Electrical Power).",
                     "nes_fill_rate_sensor_id": "Fill rate sensor ID of the Nestore hot water storage internal thermal resistor.",
-                    "nes_efficiency_sensor_id": "Nestore internal resistor coeffient of performance (Thermal Power / Electrical Power).",
+                    "nes_efficiency_sensor_id": "Nestore internal resistor coefficient of performance (Thermal Power / Electrical Power).",
                     "rm_discharge_sensor": "The sensor that provides the resource manager discharge data.",
                     "active_actuator_id_sensor_id" : "Sensor ID to record which actuator is active.",
-                    "leakage_beaviour_sensor_id" : "Sensor ID to record the leakage behaviour.",
+                    "leakage_behaviour_sensor_id" : "Sensor ID to record the leakage behaviour.",
                     "state_of_charge_sensor_id" : "Sensor ID to record the State of Charge of the planned schedule."
                   }
               }

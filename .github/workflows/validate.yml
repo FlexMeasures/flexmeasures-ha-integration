@@ -34,7 +34,7 @@ jobs:
 
   test:
     needs: check
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     name: "Test (on Python 3.12)"
     steps:
       - uses: actions/setup-python@v4
@@ -50,6 +50,12 @@ jobs:
 
       - name: Install test requirements
         run: pip install -r requirements.test.txt
+
+      - name: Install integration requirements from the manifest
+        # Tests must run against the exact versions Home Assistant installs for
+        # users. tests/test_manifest.py guards that this step stays in sync.
+        run: |
+          pip install $(python -c "import json; print(' '.join(json.load(open('custom_components/flexmeasures_hacs/manifest.json'))['requirements']))")
 
       - name: Run all tests except those marked to be skipped by GitHub AND record coverage
         run: pytest

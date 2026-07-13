@@ -12,9 +12,10 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigValidationError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.storage import Store
 
 from .config_flow import get_host_and_ssl_from_url
-from .const import DOMAIN, FRBC_CONFIG
+from .const import DATASTORE, DOMAIN, FM_CLIENT, FRBC_CONFIG, TIMERS
 from .control_types import FRBC_Config
 from .services import (
     async_setup_services,
@@ -72,7 +73,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     FRBC_data = FRBC_Config(**frbc_data_dict)
     hass.data[DOMAIN][FRBC_CONFIG] = FRBC_data
 
-    hass.data[DOMAIN]["fm_client"] = client
+    hass.data[DOMAIN][FM_CLIENT] = client
+    hass.data[DOMAIN][TIMERS] = {}
+
+    # Create a persistent datastore
+    datastore = PersistentDatastore(hass, DOMAIN)
+    await datastore.async_load()
+    hass.data[DOMAIN][DATASTORE] = datastore
 
     hass.http.register_view(WebsocketAPIView(entry))
 
@@ -112,7 +119,7 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
         config_entry.minor_version,
     )
 
-    if config_entry.version > 2:
+    if config_entry.version > 3:
         # This means the user has downgraded from a future version
         return False
 
@@ -131,6 +138,41 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
 
         hass.config_entries.async_update_entry(config_entry, data=new_data, version=2)
 
+    if config_entry.version == 2:
+        # v3 renames the misspelled leakage_beaviour_sensor_id (which client
+        # versions >=0.8 no longer accept) and fills S2 fields that did not
+        # exist when the entry was created (e.g. asset_id).
+        from .config_flow import S2_SCHEMA
+
+        def migrate_s2_section(s2: dict, fill_defaults: bool) -> dict:
+            s2 = {**s2}
+            if "leakage_beaviour_sensor_id" in s2:
+                s2.setdefault(
+                    "leakage_behaviour_sensor_id",
+                    s2.pop("leakage_beaviour_sensor_id"),
+                )
+            if fill_defaults:
+                for field in S2_SCHEMA.schema.keys():
+                    field_name = str(field)
+                    if field_name not in s2 and hasattr(field, "default"):
+                        s2[field_name] = field.default()
+            return s2
+
+        new_data = {**config_entry.data}
+        if "s2" in new_data:
+            new_data["s2"] = migrate_s2_section(new_data["s2"], fill_defaults=True)
+        new_options = {**config_entry.options}
+        if "s2" in new_options:
+            # Options override data per key, so only rename here; missing keys
+            # fall back to the defaults filled into data above.
+            new_options["s2"] = migrate_s2_section(
+                new_options["s2"], fill_defaults=False
+            )
+
+        hass.config_entries.async_update_entry(
+            config_entry, data=new_data, options=new_options, version=3
+        )
+
     _LOGGER.debug(
         "Migration to configuration version %s.%s successful",
         config_entry.version,
@@ -138,3 +180,34 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
     )
 
     return True
+
+
+class PersistentDatastore(dict):
+    def __init__(self, hass, domain: str, version: int = 1, save_delay: float = 5.0):
+        super().__init__()
+        self.hass = hass
+        self._store = Store(hass, version=version, key=f"{domain}_datastore")
+        self._initialized = False
+        self._save_handle = None
+        self._save_delay = save_delay
+
+    async def async_load(self):
+        data = await self._store.async_load() or {}
+        self.clear()
+        self.update(data)
+        self._initialized = True
+
+    async def async_save(self):
+        if not self._initialized:
+            raise RuntimeError("Datastore not loaded yet")
+        await self._store.async_save(dict(self))
+
+    def __setitem__(self, key, value):
+        super().__setitem__(key, value)
+        hass = self._store.hass
+        hass.loop.create_task(self._store.async_save(dict(self)))
+
+    def __delitem__(self, key):
+        super().__delitem__(key)
+        hass = self._store.hass
+        hass.loop.create_task(self._store.async_save(dict(self)))

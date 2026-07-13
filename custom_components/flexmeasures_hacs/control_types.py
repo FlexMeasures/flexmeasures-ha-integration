@@ -10,8 +10,12 @@ from datetime import timedelta
 class FRBC_Config:
     """Dataclass for FRBC configuration."""
 
+    asset_id: int
+
     soc_minima_sensor_id: int
     soc_maxima_sensor_id: int
+
+    # power_sensor_id: int
 
     consumption_sensor_id: int
     production_sensor_id: int
@@ -30,7 +34,7 @@ class FRBC_Config:
     nes_efficiency_sensor_id: int
 
     rm_discharge_sensor_id: int
-    leakage_beaviour_sensor_id: int
+    leakage_behaviour_sensor_id: int
     state_of_charge_sensor_id: int
 
     schedule_duration: timedelta
