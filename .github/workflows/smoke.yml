@@ -58,7 +58,9 @@ jobs:
         run: |
           docker logs ha > ha.log 2>&1
           grep -q "Setting up flexmeasures_hacs" ha.log
+          # The seeded entry is an old (v2) one, so the whole migration chain runs.
           grep -q "Migrating configuration from version 2" ha.log
+          grep -q "Migration to configuration version 4" ha.log
           ! grep -E "ERROR.*(flexmeasures_hacs|flexmeasures_client)" ha.log
 
       - name: Check dependency consistency inside Home Assistant
