@@ -21,17 +21,19 @@ RETRY_INTERVAL = 5
 
 
 async def try_handshake(base_url: str) -> bool:
-    async with aiohttp.ClientSession() as session:
-        async with session.ws_connect(base_url + WS_PATH) as ws:
-            msg = await ws.receive(timeout=30)
-            if msg.type != aiohttp.WSMsgType.TEXT:
-                print(f"Unexpected websocket message type: {msg.type}")
-                return False
-            handshake = json.loads(msg.data)
-            print(f"Received: {handshake}")
-            assert handshake["message_type"] == "Handshake", handshake
-            assert handshake["role"] == "CEM", handshake
-            return True
+    async with (
+        aiohttp.ClientSession() as session,
+        session.ws_connect(base_url + WS_PATH) as ws,
+    ):
+        msg = await ws.receive(timeout=30)
+        if msg.type != aiohttp.WSMsgType.TEXT:
+            print(f"Unexpected websocket message type: {msg.type}")
+            return False
+        handshake = json.loads(msg.data)
+        print(f"Received: {handshake}")
+        assert handshake["message_type"] == "Handshake", handshake
+        assert handshake["role"] == "CEM", handshake
+        return True
 
 
 async def main() -> int:
@@ -43,7 +45,7 @@ async def main() -> int:
             if await try_handshake(base_url):
                 print("Smoke test OK: CEM Handshake received.")
                 return 0
-        except (aiohttp.ClientError, asyncio.TimeoutError, AssertionError) as exc:
+        except (TimeoutError, aiohttp.ClientError, AssertionError) as exc:
             last_error = exc
         await asyncio.sleep(RETRY_INTERVAL)
     print(f"Smoke test FAILED: no CEM Handshake within {TIMEOUT}s: {last_error!r}")

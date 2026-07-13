@@ -106,7 +106,7 @@ friendly_name: FlexMeasures Schedule
 For a schedule to be calculated a `soc_at_start` is required. All other variables needed to calculate a new schedule were provided in the configuration. The following `yaml` file will trigger a schedule and update the sensor:
 
 ```
-service: flexmeasures.trigger_and_get_schedule
+action: flexmeasures_hacs.trigger_and_get_schedule
 data:
   soc_at_start: "FLOAT_SOC_AT_START"
 ```
@@ -116,10 +116,25 @@ data:
 The intended usage of FlexMeasures is letting the schedules and Home Assistant optimize the flexible energy assets without user interaction. Automations can be used to trigger new schedules when new information is available that would impact the schedule. Some examples of events that should trigger the request of new schedules are when the battery/asset is connected, when new prices are available, and periodically to match the executed schedule to the calculated schedule. The user will need to provide a Home Assistant entity as a `soc_at_start` to be used for triggering a schedule. This is an example `yaml` for the action set in the automations:
 
 ```
-service: flexmeasures.trigger_and_get_schedule
+action: flexmeasures_hacs.trigger_and_get_schedule
 data:
   soc_at_start: "\{\{ state_attr\('SENSOR_TYPE.SENSOR', 'SENSOR_ATTRIBUTES'\) \}\}"
 ```
+
+## Several FlexMeasures servers
+
+You can add the integration more than once, to talk to several FlexMeasures servers (or several accounts on one server) from the same Home Assistant. Each entry gets its own device, its own schedule sensor and its own S2 session.
+
+With more than one entry configured, say which one an action is for:
+
+```
+action: flexmeasures_hacs.trigger_and_get_schedule
+data:
+  soc_at_start: "FLOAT_SOC_AT_START"
+  entry_id: "THE_CONFIG_ENTRY_ID"
+```
+
+and connect a Resource Manager to the entry's own websocket endpoint, `/api/websocket_custom/<entry_id>`. With a single entry configured, both the `entry_id` field and the path suffix can be left out.
 
 ## Development
 

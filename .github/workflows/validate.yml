@@ -2,15 +2,21 @@ name: Validate
 
 on:
   push:
+  pull_request:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
+
+env:
+  # Home Assistant 2026.7 runs on Python 3.14, and so does the pinned
+  # pytest-homeassistant-custom-component.
+  PYTHON_VERSION: "3.14"
 
 jobs:
   validate-hacs:
     runs-on: "ubuntu-latest"
     steps:
-      - uses: "actions/checkout@v3"
+      - uses: "actions/checkout@v4"
       - name: HACS validation
         uses: "hacs/action@main"
         with:
@@ -24,29 +30,24 @@ jobs:
 
   check:
     runs-on: ubuntu-latest
-    name: Check (on Python 3.12)
+    name: Check
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: 3.12
-      - uses: actions/checkout@v3
-      - uses: pre-commit/action@v3.0.0
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: pre-commit/action@v3.0.1
 
   test:
     needs: check
     runs-on: ubuntu-latest
-    name: "Test (on Python 3.12)"
+    name: "Test (on Python ${{ env.PYTHON_VERSION }})"
     steps:
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.12
-
       - name: Check out src from Git
-        uses: actions/checkout@v3
-      - name: Get history and tags for SCM versioning to work
-        run: |
-          git fetch --prune --unshallow
-          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install test requirements
         run: pip install -r requirements.test.txt

@@ -6,36 +6,55 @@ from dataclasses import fields
 import logging
 
 from flexmeasures_client import FlexMeasuresClient
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigValidationError
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 
 from .config_flow import get_host_and_ssl_from_url
-from .const import DATASTORE, DOMAIN, FM_CLIENT, FRBC_CONFIG, TIMERS
+from .const import DOMAIN, SCHEDULE_ENTITY
 from .control_types import FRBC_Config
+from .datastore import (
+    LEGACY_STORAGE_KEY,
+    STORAGE_VERSION,
+    PersistentDatastore,
+    storage_key,
+)
+from .models import FlexMeasuresConfigEntry, FlexMeasuresRuntimeData
 from .services import (
     async_setup_services,
     async_unload_services,
     get_from_option_or_config,
 )
-from .websockets import WebsocketAPIView
+from .websockets import async_register_websocket_view
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
+# Fields of FRBC_Config that live outside the "s2" section of the config entry.
+NON_S2_FIELDS = (
+    "consumption_price_sensor",
+    "production_price_sensor",
+    "schedule_duration",
+)
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+
+async def async_setup_entry(
+    hass: HomeAssistant, entry: FlexMeasuresConfigEntry
+) -> bool:
     """Set up FlexMeasures from a config entry."""
-
-    hass.data.setdefault(DOMAIN, {})
 
     # Reload integration when the options are updated
     entry.async_on_unload(entry.add_update_listener(options_update_listener))
+
+    if get_from_option_or_config("schedule_duration", entry) is None:
+        raise ConfigValidationError(
+            message="Schedule duration is not set", exceptions=[]
+        )
 
     host, ssl = get_host_and_ssl_from_url(get_from_option_or_config("url", entry))
     client = FlexMeasuresClient(
@@ -47,71 +66,65 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         logger=_LOGGER,
     )
 
-    # store config
-    # if schedule_duration is not set, throw an error
-    if get_from_option_or_config("schedule_duration", entry) is None:
-        raise ConfigValidationError(
-            message="Schedule duration is not set", exceptions=[]
-        )
-
-    frbc_data_dict = {}
-
-    non_s2_fields = [
-        "consumption_price_sensor",
-        "production_price_sensor",
-        "schedule_duration",
-    ]
-
-    for field in fields(FRBC_Config):
-        if field.name in non_s2_fields:
-            frbc_data_dict[field.name] = get_from_option_or_config(field.name, entry)
-        else:
-            frbc_data_dict[field.name] = get_from_option_or_config(
-                field.name, entry, section="s2"
+    frbc_config = FRBC_Config(
+        **{
+            f.name: get_from_option_or_config(
+                f.name,
+                entry,
+                section=None if f.name in NON_S2_FIELDS else "s2",
             )
+            for f in fields(FRBC_Config)
+        }
+    )
 
-    FRBC_data = FRBC_Config(**frbc_data_dict)
-    hass.data[DOMAIN][FRBC_CONFIG] = FRBC_data
-
-    hass.data[DOMAIN][FM_CLIENT] = client
-    hass.data[DOMAIN][TIMERS] = {}
-
-    # Create a persistent datastore
-    datastore = PersistentDatastore(hass, DOMAIN)
+    datastore = PersistentDatastore(hass, storage_key(entry.entry_id))
     await datastore.async_load()
-    hass.data[DOMAIN][DATASTORE] = datastore
 
-    hass.http.register_view(WebsocketAPIView(entry))
+    entry.runtime_data = FlexMeasuresRuntimeData(
+        client=client,
+        frbc_config=frbc_config,
+        datastore=datastore,
+    )
 
+    async_register_websocket_view(hass)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
-    await async_setup_services(hass, entry)
+    async_setup_services(hass)
 
     return True
 
 
-async def options_update_listener(hass: HomeAssistant, config_entry: ConfigEntry):
+async def options_update_listener(
+    hass: HomeAssistant, config_entry: FlexMeasuresConfigEntry
+) -> None:
     """Handle options update."""
 
     _LOGGER.debug("Configuration options updated, reloading FlexMeasures integration")
     await hass.config_entries.async_reload(config_entry.entry_id)
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(
+    hass: HomeAssistant, entry: FlexMeasuresConfigEntry
+) -> bool:
     """Unload a config entry."""
-    if DOMAIN not in hass.data:
-        return True
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
-    # Remove services
-    await async_unload_services(hass)
-
-    if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        hass.data[DOMAIN].pop(entry.entry_id, None)
+    if unload_ok:
+        # Services are registered for the integration as a whole, so only drop
+        # them once the last entry goes away.
+        remaining = [
+            other
+            for other in hass.config_entries.async_loaded_entries(DOMAIN)
+            if other.entry_id != entry.entry_id
+        ]
+        if not remaining:
+            async_unload_services(hass)
 
     return unload_ok
 
 
-async def async_migrate_entry(hass, config_entry: ConfigEntry):
+async def async_migrate_entry(
+    hass: HomeAssistant, config_entry: FlexMeasuresConfigEntry
+) -> bool:
     """Migrate old entry."""
     _LOGGER.debug(
         "Migrating configuration from version %s.%s",
@@ -119,22 +132,20 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
         config_entry.minor_version,
     )
 
-    if config_entry.version > 3:
+    if config_entry.version > 4:
         # This means the user has downgraded from a future version
         return False
 
     if config_entry.version == 1:
-        from .config_flow import S2_SCHEMA
+        from .config_flow import S2_SCHEMA, schema_defaults
 
         new_data = {**config_entry.data} | {**config_entry.options}
-        new_data["s2"] = {}
-
-        for field in S2_SCHEMA.schema.keys():
-            field_name = str(field)
-            if field_name in new_data:
-                new_data["s2"][field_name] = new_data[field_name]
-            elif hasattr(field, "default"):
-                new_data["s2"][field_name] = field.default()
+        s2_defaults = schema_defaults(S2_SCHEMA)
+        new_data["s2"] = {
+            field: new_data.get(field, s2_defaults.get(field))
+            for field in (str(field) for field in S2_SCHEMA.schema)
+            if field in new_data or field in s2_defaults
+        }
 
         hass.config_entries.async_update_entry(config_entry, data=new_data, version=2)
 
@@ -142,7 +153,7 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
         # v3 renames the misspelled leakage_beaviour_sensor_id (which client
         # versions >=0.8 no longer accept) and fills S2 fields that did not
         # exist when the entry was created (e.g. asset_id).
-        from .config_flow import S2_SCHEMA
+        from .config_flow import S2_SCHEMA, schema_defaults
 
         def migrate_s2_section(s2: dict, fill_defaults: bool) -> dict:
             s2 = {**s2}
@@ -152,10 +163,8 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
                     s2.pop("leakage_beaviour_sensor_id"),
                 )
             if fill_defaults:
-                for field in S2_SCHEMA.schema.keys():
-                    field_name = str(field)
-                    if field_name not in s2 and hasattr(field, "default"):
-                        s2[field_name] = field.default()
+                for field, default in schema_defaults(S2_SCHEMA).items():
+                    s2.setdefault(field, default)
             return s2
 
         new_data = {**config_entry.data}
@@ -173,6 +182,16 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
             config_entry, data=new_data, options=new_options, version=3
         )
 
+    if config_entry.version == 3:
+        # v4 makes runtime state per config entry, so that several FlexMeasures
+        # servers can be configured side by side. The schedule sensor and the
+        # datastore used to be shared; give them entry-scoped identities while
+        # keeping the existing entity (and its history) and the stored S2 state.
+        await _async_migrate_unique_ids(hass, config_entry)
+        await _async_migrate_datastore(hass, config_entry)
+
+        hass.config_entries.async_update_entry(config_entry, version=4)
+
     _LOGGER.debug(
         "Migration to configuration version %s.%s successful",
         config_entry.version,
@@ -182,32 +201,45 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
     return True
 
 
-class PersistentDatastore(dict):
-    def __init__(self, hass, domain: str, version: int = 1, save_delay: float = 5.0):
-        super().__init__()
-        self.hass = hass
-        self._store = Store(hass, version=version, key=f"{domain}_datastore")
-        self._initialized = False
-        self._save_handle = None
-        self._save_delay = save_delay
+async def _async_migrate_unique_ids(
+    hass: HomeAssistant, entry: FlexMeasuresConfigEntry
+) -> None:
+    """Scope the schedule sensor's unique id to the config entry."""
 
-    async def async_load(self):
-        data = await self._store.async_load() or {}
-        self.clear()
-        self.update(data)
-        self._initialized = True
+    @callback
+    def _migrate(entity_entry: er.RegistryEntry) -> dict[str, str] | None:
+        if entity_entry.unique_id == SCHEDULE_ENTITY:
+            return {"new_unique_id": f"{entry.entry_id}_{SCHEDULE_ENTITY}"}
+        return None
 
-    async def async_save(self):
-        if not self._initialized:
-            raise RuntimeError("Datastore not loaded yet")
-        await self._store.async_save(dict(self))
+    await er.async_migrate_entries(hass, entry.entry_id, _migrate)
 
-    def __setitem__(self, key, value):
-        super().__setitem__(key, value)
-        hass = self._store.hass
-        hass.loop.create_task(self._store.async_save(dict(self)))
 
-    def __delitem__(self, key):
-        super().__delitem__(key)
-        hass = self._store.hass
-        hass.loop.create_task(self._store.async_save(dict(self)))
+async def _async_migrate_datastore(
+    hass: HomeAssistant, entry: FlexMeasuresConfigEntry
+) -> None:
+    """Move the shared S2 datastore to a store belonging to this config entry."""
+    legacy_store: Store = Store(hass, version=STORAGE_VERSION, key=LEGACY_STORAGE_KEY)
+    legacy_data = await legacy_store.async_load()
+    if not legacy_data:
+        return
+
+    entry_store: Store = Store(
+        hass, version=STORAGE_VERSION, key=storage_key(entry.entry_id)
+    )
+    if await entry_store.async_load():
+        # Already migrated (or this entry has state of its own); don't clobber it.
+        return
+
+    await entry_store.async_save(legacy_data)
+    await legacy_store.async_remove()
+    _LOGGER.debug("Migrated the S2 datastore to config entry %s", entry.entry_id)
+
+
+__all__ = [
+    "ConfigEntry",
+    "FlexMeasuresConfigEntry",
+    "async_migrate_entry",
+    "async_setup_entry",
+    "async_unload_entry",
+]

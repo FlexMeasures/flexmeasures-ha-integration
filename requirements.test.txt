@@ -1,7 +1,9 @@
 pytest
 pytest-cov
-pytest-homeassistant-custom-component==0.13.205 # fixing version, otherwise it will start installing all HA versions...
-pycares<4.6 # newer pycares spawns a shutdown thread that this pytest-homeassistant-custom-component version flags as lingering
+# Pinned: each release of this package targets one Home Assistant version.
+# 0.13.346 == Home Assistant 2026.7.2 (see the project's `ha_version` file) and
+# requires Python 3.14, which is what Home Assistant itself runs on.
+pytest-homeassistant-custom-component==0.13.346
 # NOTE: do not list flexmeasures-client here. Tests must run against the exact
 # version pinned in custom_components/flexmeasures_hacs/manifest.json, which is
 # installed separately (see .github/workflows/validate.yml). A guard test in

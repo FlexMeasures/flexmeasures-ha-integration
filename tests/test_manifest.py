@@ -9,12 +9,12 @@ manifest.
 
 from __future__ import annotations
 
-import json
 from importlib.metadata import PackageNotFoundError, version
+import json
 from pathlib import Path
 
-import pytest
 from packaging.requirements import Requirement
+import pytest
 
 MANIFEST_PATH = (
     Path(__file__).parent.parent

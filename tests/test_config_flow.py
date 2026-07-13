@@ -1,14 +1,19 @@
 """Test the FlexMeasures config flow."""
 
 from unittest.mock import patch
-from pytest_homeassistant_custom_component.common import MockConfigEntry
-
-from custom_components.flexmeasures_hacs.config_flow import SCHEMA
-from custom_components.flexmeasures_hacs.const import DOMAIN
 
 from homeassistant import config_entries, data_entry_flow
 from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.flexmeasures_hacs.config_flow import (
+    S2_SCHEMA,
+    SCHEMA,
+    schema_defaults,
+)
+from custom_components.flexmeasures_hacs.const import DOMAIN
+
+from .conftest import CURRENT_VERSION
 
 CONFIG = {
     "username": "admin@admin.com",
@@ -53,12 +58,15 @@ async def test_form(hass: HomeAssistant) -> None:
     assert result["type"] == data_entry_flow.FlowResultType.FORM
     assert (result["errors"] == {}) or result["errors"] is None
 
-    with patch(
-        "flexmeasures_client.FlexMeasuresClient.get_access_token",
-    ) as mock_validate_input, patch(
-        "custom_components.flexmeasures_hacs.async_setup_entry",
-        return_value=True,
-    ) as mock_setup_entry:
+    with (
+        patch(
+            "flexmeasures_client.FlexMeasuresClient.get_access_token",
+        ) as mock_validate_input,
+        patch(
+            "custom_components.flexmeasures_hacs.async_setup_entry",
+            return_value=True,
+        ) as mock_setup_entry,
+    ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             CONFIG,
@@ -68,16 +76,30 @@ async def test_form(hass: HomeAssistant) -> None:
         assert result2["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
         assert result2["title"] == "FlexMeasures"
 
-        fields = {str(key): key for key in SCHEMA.schema}
+        defaults = schema_defaults(SCHEMA)
 
         for key, val in result2["options"].items():
             if key in CONFIG:
                 assert val == CONFIG[key]
             else:
-                assert val == fields[key].default()
+                assert val == defaults[key]
 
         mock_setup_entry.assert_called_once()
         mock_validate_input.assert_called_once()
+
+
+async def test_no_hardcoded_sensor_ids_as_defaults() -> None:
+    """The schemas must not default to the sensor ids of somebody's server.
+
+    Up to v0.3.9 the config flow defaulted to one pilot's FlexMeasures URL and
+    to the asset and sensor ids on that server, so a fresh install silently
+    pointed at somebody else's asset.
+    """
+    assert schema_defaults(S2_SCHEMA) == {}
+
+    defaults = schema_defaults(SCHEMA)
+    assert set(defaults) == {"schedule_duration", "soc_unit"}
+    assert "seita.energy" not in str(defaults)
 
 
 async def test_migration(hass: HomeAssistant) -> None:
@@ -100,16 +122,18 @@ async def test_migration(hass: HomeAssistant) -> None:
     entries = hass.config_entries.async_entries("flexmeasures_hacs")
 
     assert len(entries) == 1
-    assert entries[0].version == 3
+    assert entries[0].version == CURRENT_VERSION
     assert "s2" in entries[0].data
     assert all(S2_CONFIG[k] == v for (k, v) in entries[0].data["s2"].items())
 
 
-async def test_migration_v2_to_v3(hass: HomeAssistant) -> None:
-    """Test migrating a v2 entry: rename the misspelled leakage key, fill new S2 fields.
+async def test_migration_v2_renames_the_misspelled_leakage_key(
+    hass: HomeAssistant,
+) -> None:
+    """Test migrating a v2 entry: rename the misspelled leakage key.
 
     v2 entries were created by releases up to v0.3.7, whose S2 section used
-    leakage_beaviour_sensor_id (sic) and had no asset_id yet.
+    leakage_beaviour_sensor_id (sic), which client versions >=0.8 reject.
     """
     old_s2 = {
         k: v
@@ -133,14 +157,14 @@ async def test_migration_v2_to_v3(hass: HomeAssistant) -> None:
     entries = hass.config_entries.async_entries("flexmeasures_hacs")
 
     assert len(entries) == 1
-    assert entries[0].version == 3
+    assert entries[0].version == CURRENT_VERSION
     s2 = entries[0].data["s2"]
     # The configured value survives under the corrected key
     assert "leakage_beaviour_sensor_id" not in s2
     assert s2["leakage_behaviour_sensor_id"] == 99
     assert entries[0].options["s2"] == {"leakage_behaviour_sensor_id": 99}
-    # Fields that did not exist in v2 are filled with schema defaults
-    assert "asset_id" in s2
-    assert "consumption_sensor_id" in s2
     # Pre-existing values are preserved
     assert s2["soc_minima_sensor_id"] == S2_CONFIG["soc_minima_sensor_id"]
+    # Fields that did not exist in v2 stay unset: they identify entities on the
+    # user's own FlexMeasures server, so there is nothing sensible to fill in.
+    assert s2.get("asset_id") is None

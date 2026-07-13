@@ -3,6 +3,10 @@
 from datetime import datetime
 from unittest.mock import patch
 
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
+import homeassistant.util.dt as dt_util
+from homeassistant.util.dt import parse_duration
 import pytest
 from s2python.common import ControlType
 
@@ -12,9 +16,6 @@ from custom_components.flexmeasures_hacs.const import (
     SERVICE_CHANGE_CONTROL_TYPE,
 )
 from custom_components.flexmeasures_hacs.services import time_ceil
-from homeassistant.core import HomeAssistant
-import homeassistant.util.dt as dt_util
-from homeassistant.util.dt import parse_duration
 
 
 @pytest.mark.skip(
@@ -140,3 +141,39 @@ async def test_get_measurements(hass: HomeAssistant, setup_fm_integration) -> No
             unit="kWh",
             resolution="PT15M",
         )
+
+
+async def test_service_needs_entry_id_when_several_servers_are_configured(
+    hass: HomeAssistant, setup_fm_integration, setup_second_fm_integration
+) -> None:
+    """With two servers configured, a service call must say which one it means."""
+    with pytest.raises(ServiceValidationError, match="entry_id"):
+        await hass.services.async_call(
+            DOMAIN,
+            "trigger_and_get_schedule",
+            service_data={"soc_at_start": 10},
+            blocking=True,
+        )
+
+
+async def test_service_targets_the_requested_entry(
+    hass: HomeAssistant, setup_fm_integration, setup_second_fm_integration
+) -> None:
+    """entry_id picks the FlexMeasures server a service call acts on."""
+    second = setup_second_fm_integration
+
+    with patch(
+        "flexmeasures_client.client.FlexMeasuresClient.trigger_and_get_schedule",
+        return_value={"values": [0.5], "unit": "MW"},
+    ) as mocked_trigger:
+        await hass.services.async_call(
+            DOMAIN,
+            "trigger_and_get_schedule",
+            service_data={"soc_at_start": 10, "entry_id": second.entry_id},
+            blocking=True,
+        )
+
+    # The second entry configures power_sensor 7, the first one sensor 1.
+    assert mocked_trigger.await_args.kwargs["sensor_id"] == 7
+    assert second.runtime_data.schedule_state.schedule
+    assert not setup_fm_integration.runtime_data.schedule_state.schedule
