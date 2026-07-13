@@ -77,7 +77,6 @@ class WebSocketHandler:
 
         self._logger = WebSocketAdapter(_WS_LOGGER, {"connid": id(self)})
         self._logger.debug("new websockets connection")
-        self._logger.warning(hass.data[DOMAIN][FM_CLIENT])
 
         frbc_data: FRBC_Config = hass.data[DOMAIN][FRBC_CONFIG]
         self._logger.info(

@@ -1,15 +1,22 @@
 {
   "domain": "flexmeasures_hacs",
   "name": "FlexMeasures for HACS",
-  "codeowners": ["@Flix6x"],
+  "codeowners": [
+    "@Flix6x"
+  ],
   "config_flow": true,
-  "dependencies": ["http"],
-  "documentation": "https://github.com/FlexMeasures/flexmeasures-hacs#flexmeasures",  
+  "dependencies": [
+    "http"
+  ],
+  "documentation": "https://github.com/FlexMeasures/flexmeasures-hacs#flexmeasures",
   "homekit": {},
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/FlexMeasures/flexmeasures-hacs/issues",
-  "requirements": ["flexmeasures-client[s2]==0.9.3", "isodate==0.6.1"],
+  "requirements": [
+    "flexmeasures-client[s2]==0.9.3",
+    "isodate==0.6.1"
+  ],
   "ssdp": [],
-  "version": "0.3.8",
+  "version": "0.3.9",
   "zeroconf": []
 }
