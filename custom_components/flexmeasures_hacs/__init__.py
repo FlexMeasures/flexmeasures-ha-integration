@@ -258,7 +258,13 @@ async def _async_migrate_unique_ids(
 async def _async_migrate_datastore(
     hass: HomeAssistant, entry: FlexMeasuresConfigEntry
 ) -> None:
-    """Move the shared S2 datastore to a store belonging to this config entry."""
+    """Copy the shared S2 datastore into a store belonging to this config entry.
+
+    The legacy store is deliberately left in place. Home Assistant does not
+    support downgrading a config entry across a major version, so rolling back
+    to an older release means removing and re-adding the entry -- and that older
+    release reads the S2 state from exactly this legacy store.
+    """
     legacy_store: Store = Store(hass, version=STORAGE_VERSION, key=LEGACY_STORAGE_KEY)
     legacy_data = await legacy_store.async_load()
     if not legacy_data:
@@ -272,8 +278,7 @@ async def _async_migrate_datastore(
         return
 
     await entry_store.async_save(legacy_data)
-    await legacy_store.async_remove()
-    _LOGGER.debug("Migrated the S2 datastore to config entry %s", entry.entry_id)
+    _LOGGER.debug("Copied the S2 datastore to config entry %s", entry.entry_id)
 
 
 __all__ = [

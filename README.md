@@ -121,6 +121,12 @@ data:
   soc_at_start: "\{\{ state_attr\('SENSOR_TYPE.SENSOR', 'SENSOR_ATTRIBUTES'\) \}\}"
 ```
 
+## Upgrading and rolling back
+
+Upgrading is handled for you: the integration migrates its configuration entry, keeping your settings, your schedule sensor (and its history) and the stored S2 state.
+
+Rolling back to an older release is a different matter. Home Assistant does not support downgrading a configuration entry across a major version — an older release refuses an entry it does not understand, and leaves it in a "migration error" state. To roll back: remove the integration in Settings > Devices & services, install the older version in HACS, and add the integration again. The S2 state that older releases use is left in place, so it survives the round trip.
+
 ## Which FlexMeasures server version you need
 
 This integration ships flexmeasures-client 0.9.x, which posts and reads sensor data through endpoints that FlexMeasures serves from **0.28.0** on (triggering a schedule needs **0.27.0**). Against an older server, the integration still loads, but `post_measurements` and `get_measurements` fail when they are called. The integration logs a warning at startup when it finds a server that is too old.

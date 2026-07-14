@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.flexmeasures_hacs.const import DOMAIN
 from custom_components.flexmeasures_hacs.services import SERVICE_NAMES
@@ -133,3 +134,40 @@ async def test_no_warning_for_a_recent_flexmeasures_server(
 
     assert entry.state == ConfigEntryState.LOADED
     assert "or above" not in caplog.text
+
+
+async def test_datastore_migration_keeps_the_legacy_store_for_rollback(
+    hass: HomeAssistant,
+) -> None:
+    """Migrating the S2 datastore must copy, not move.
+
+    Rolling back to an older release means re-adding the entry, and that older
+    release reads its S2 state from the legacy store, so it has to survive.
+    """
+    from homeassistant.helpers.storage import Store
+
+    from custom_components.flexmeasures_hacs.datastore import (
+        LEGACY_STORAGE_KEY,
+        STORAGE_VERSION,
+        storage_key,
+    )
+
+    from .conftest import ENTRY_DATA
+
+    legacy_state = {"some-cem-state": 42}
+    await Store(hass, STORAGE_VERSION, LEGACY_STORAGE_KEY).async_save(legacy_state)
+
+    # A v3 entry, i.e. one created before the datastore became per-entry.
+    entry = MockConfigEntry(
+        domain=DOMAIN, version=3, data=ENTRY_DATA, source="user", unique_id="rollback"
+    )
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    entry_store = Store(hass, STORAGE_VERSION, storage_key(entry.entry_id))
+    assert await entry_store.async_load() == legacy_state
+    # ... and the legacy store is still there for an older release to read.
+    assert await Store(hass, STORAGE_VERSION, LEGACY_STORAGE_KEY).async_load() == (
+        legacy_state
+    )

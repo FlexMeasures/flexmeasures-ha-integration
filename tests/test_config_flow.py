@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 from homeassistant import config_entries, data_entry_flow
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -168,3 +169,29 @@ async def test_migration_v2_renames_the_misspelled_leakage_key(
     # Fields that did not exist in v2 stay unset: they identify entities on the
     # user's own FlexMeasures server, so there is nothing sensible to fill in.
     assert s2.get("asset_id") is None
+
+
+async def test_downgrade_is_refused_cleanly(hass: HomeAssistant) -> None:
+    """An entry from a newer release must not be silently mangled.
+
+    Home Assistant does not support downgrading a config entry across a major
+    version: it calls the older release's async_migrate_entry, which refuses.
+    The entry then sits in MIGRATION_ERROR until the user removes and re-adds
+    it -- rather than being loaded with data this version does not understand.
+    """
+    future_entry = MockConfigEntry(
+        version=CURRENT_VERSION + 1,
+        minor_version=1,
+        domain=DOMAIN,
+        title="FlexMeasures",
+        data=CONFIG,
+        source="user",
+    )
+    future_entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(future_entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert future_entry.state is ConfigEntryState.MIGRATION_ERROR
+    # The stored configuration is left untouched, so re-upgrading recovers it.
+    assert future_entry.version == CURRENT_VERSION + 1
+    assert future_entry.data == CONFIG
