@@ -2,11 +2,12 @@
 
 # pytest ./tests/components/flexmeasures/ --cov=homeassistant.components.flexmeasures --cov-report term-missing -vv
 
+from http import HTTPStatus
 import logging
 
-import pytest
-
+from aiohttp import WSServerHandshakeError
 from homeassistant.core import HomeAssistant
+import pytest
 
 
 async def test_websocket_connection_does_not_log_credentials(
@@ -47,3 +48,23 @@ async def test_cem_processes_websocket_msg(
 
     assert msg["message_type"] == "Handshake"
     assert msg["role"] == "CEM"
+
+
+async def test_websocket_targets_the_requested_entry(
+    hass: HomeAssistant, setup_fm_integration, setup_second_fm_integration, fm_ws_client
+) -> None:
+    """A Resource Manager picks its FlexMeasures server by entry id in the path."""
+    second = setup_second_fm_integration
+
+    # With two entries loaded, the bare endpoint cannot know which one to use.
+    with pytest.raises(WSServerHandshakeError) as err:
+        await fm_ws_client(hass)
+    assert err.value.status == HTTPStatus.BAD_REQUEST
+
+    websocket = await fm_ws_client(hass, entry_id=second.entry_id)
+    msg = await websocket.receive_json()
+
+    assert msg["message_type"] == "Handshake"
+    assert msg["role"] == "CEM"
+    assert second.runtime_data.cem is not None
+    assert setup_fm_integration.runtime_data.cem is None

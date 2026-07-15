@@ -195,6 +195,9 @@
     "sensor": {
       "power": {
         "name": "FlexMeasures power sensor"
+      },
+      "schedule": {
+        "name": "Schedule"
       }
     }
   }

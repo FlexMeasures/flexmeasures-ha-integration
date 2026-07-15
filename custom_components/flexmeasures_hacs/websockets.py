@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from dataclasses import asdict
 import logging
-from typing import Any, Final
+from typing import Any, ClassVar, Final
 
 import aiohttp
 from aiohttp import web
@@ -14,23 +14,34 @@ from flexmeasures_client.s2.control_types.FRBC.frbc_tunes import (
     FillRateBasedControlTUNES,
 )
 from flexmeasures_client.s2.utils import get_unique_id
-from s2python.common import EnergyManagementRole, Handshake, ControlType
-
 from homeassistant.components.http import HomeAssistantView
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.http import KEY_HASS
+from s2python.common import ControlType, EnergyManagementRole, Handshake
 
-from .const import (
-    DATASTORE,
-    DOMAIN,
-    FM_CLIENT,
-    FRBC_CONFIG,
-    TIMERS,
-    WS_VIEW_NAME,
-    WS_VIEW_URI,
-)
+from .const import DOMAIN, WS_VIEW_NAME, WS_VIEW_URI
 from .control_types import FRBC_Config
+from .models import FlexMeasuresConfigEntry
 
 _WS_LOGGER: Final = logging.getLogger(f"{__name__}.connection")
+
+DATA_VIEW_REGISTERED: Final = f"{DOMAIN}_websocket_view_registered"
+
+
+@callback
+def async_register_websocket_view(hass: HomeAssistant) -> None:
+    """Register the S2 websocket view, once for the whole integration.
+
+    A view is registered on Home Assistant's HTTP app, not on a config entry,
+    so it must not be registered again per entry. Resource Managers pick the
+    config entry to talk to by connecting to /api/websocket_custom/<entry_id>;
+    the bare /api/websocket_custom is served when only one entry is loaded.
+    """
+    if hass.data.get(DATA_VIEW_REGISTERED):
+        return
+
+    hass.http.register_view(WebsocketAPIView())
+    hass.data[DATA_VIEW_REGISTERED] = True
 
 
 class WebsocketAPIView(HomeAssistantView):
@@ -38,19 +49,57 @@ class WebsocketAPIView(HomeAssistantView):
 
     name: str = WS_VIEW_NAME
     url: str = WS_VIEW_URI
+    extra_urls: ClassVar[list[str]] = [f"{WS_VIEW_URI}/{{entry_id}}"]
     requires_auth: bool = False
 
-    def __init__(self, entry) -> None:
-        """Initialize websocket view."""
-        super().__init__()
-        self.entry = entry
-
-    async def get(self, request: web.Request) -> web.WebSocketResponse:
+    async def get(
+        self, request: web.Request, entry_id: str | None = None
+    ) -> web.WebSocketResponse:
         """Handle an incoming websocket connection."""
+        hass = request.app[KEY_HASS]
+        entry = _async_resolve_entry(hass, entry_id)
 
-        return await WebSocketHandler(
-            request.app["hass"], self.entry, request
-        ).async_handle()
+        if entry.runtime_data.frbc_config.asset_id is None:
+            # Better to say so than to run the S2 control path against sensor
+            # ids that are not set (earlier versions silently fell back to the
+            # ids of one pilot's FlexMeasures server).
+            raise web.HTTPBadRequest(
+                text=(
+                    "The S2 section of the FlexMeasures configuration is incomplete: "
+                    "set at least the asset_id, in Settings > Devices & services > "
+                    "FlexMeasures > Configure."
+                )
+            )
+
+        return await WebSocketHandler(hass, entry, request).async_handle()
+
+
+@callback
+def _async_resolve_entry(
+    hass: HomeAssistant, entry_id: str | None
+) -> FlexMeasuresConfigEntry:
+    """Return the config entry a websocket connection is for."""
+    entries = hass.config_entries.async_loaded_entries(DOMAIN)
+
+    if entry_id is not None:
+        for entry in entries:
+            if entry.entry_id == entry_id:
+                return entry
+        raise web.HTTPNotFound(
+            text=f"No loaded FlexMeasures configuration entry with entry_id {entry_id!r}."
+        )
+
+    if not entries:
+        raise web.HTTPNotFound(text="No FlexMeasures configuration entry is loaded.")
+    if len(entries) > 1:
+        raise web.HTTPBadRequest(
+            text=(
+                "Several FlexMeasures configuration entries are loaded. "
+                f"Connect to {WS_VIEW_URI}/<entry_id> to say which one to use."
+            )
+        )
+
+    return entries[0]
 
 
 class WebSocketAdapter(logging.LoggerAdapter):
@@ -60,7 +109,7 @@ class WebSocketAdapter(logging.LoggerAdapter):
         """Add connid to websocket log messages."""
         if not self.extra or "connid" not in self.extra:
             return msg, kwargs
-        return f'[{self.extra["connid"]}] {msg}', kwargs
+        return f"[{self.extra['connid']}] {msg}", kwargs
 
 
 class WebSocketHandler:
@@ -68,7 +117,12 @@ class WebSocketHandler:
 
     cem: CEM
 
-    def __init__(self, hass: HomeAssistant, entry, request: web.Request) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: FlexMeasuresConfigEntry,
+        request: web.Request,
+    ) -> None:
         """Initialize an active connection."""
         self.hass = hass
         self.request = request
@@ -78,16 +132,18 @@ class WebSocketHandler:
         self._logger = WebSocketAdapter(_WS_LOGGER, {"connid": id(self)})
         self._logger.debug("new websockets connection")
 
-        frbc_data: FRBC_Config = hass.data[DOMAIN][FRBC_CONFIG]
+        runtime_data = entry.runtime_data
+        frbc_data: FRBC_Config = runtime_data.frbc_config
         self._logger.info(
-            f"Resource in FRBC mode mapped to FlexMeasures asset {frbc_data.asset_id}."
+            "Resource in FRBC mode mapped to FlexMeasures asset %s.", frbc_data.asset_id
         )
+
         self.cem = CEM(
-            fm_client=hass.data[DOMAIN][FM_CLIENT],
+            fm_client=runtime_data.client,
             default_control_type=ControlType.FILL_RATE_BASED_CONTROL,
             logger=_WS_LOGGER,
-            timers=hass.data[DOMAIN][TIMERS],
-            datastore=hass.data[DOMAIN][DATASTORE],
+            timers=runtime_data.timers,
+            datastore=runtime_data.datastore,
             power_sensor_id={
                 # todo: set up the other power sensors
                 # "ELECTRIC.POWER.3_PHASE_SYMMETRIC": frbc_data.<id>,  # THP
@@ -99,12 +155,12 @@ class WebSocketHandler:
         )
         frbc = FillRateBasedControlTUNES(
             **asdict(frbc_data),
-            timers=hass.data[DOMAIN][TIMERS],
-            datastore=hass.data[DOMAIN][DATASTORE],
+            timers=runtime_data.timers,
+            datastore=runtime_data.datastore,
             timezone=hass.config.time_zone,
         )
-        hass.data[DOMAIN]["cem"] = self.cem
         self.cem.register_control_type(frbc)
+        runtime_data.cem = self.cem
 
     async def _websocket_producer(self):
         """Send the messages available at the `cem` queue."""
@@ -152,8 +208,18 @@ class WebSocketHandler:
                         "Msg.type == aiohttp.WSMsgType.ERROR: closing CEM.."
                     )
                     await cem.close()
-        except Exception:  # pylint: disable=broad-exception-caught
+        except ConnectionError:
+            # Only a failure to reach FlexMeasures says anything about our
+            # credentials. Any other error here is a bug in handling the
+            # message, and asking the user to re-authenticate would only
+            # obscure it.
+            self._logger.warning(
+                "Cannot reach FlexMeasures; asking for re-authentication",
+                exc_info=True,
+            )
             self.entry.async_start_reauth(self.hass)
+        except Exception:  # pylint: disable=broad-exception-caught
+            self._logger.exception("Error while handling an incoming S2 message")
         finally:
             self._logger.debug("Finished _websocket_consumer: closing CEM..")
             await cem.close()
@@ -176,6 +242,5 @@ class WebSocketHandler:
         except ConnectionResetError:
             self._logger.debug("Connection reset in async_handle: closing CEM..")
             await self.cem.close()
-            self.entry.async_start_reauth(self.hass)
 
         return wsock

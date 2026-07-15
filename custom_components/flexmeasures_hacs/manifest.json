@@ -8,15 +8,12 @@
   "dependencies": [
     "http"
   ],
-  "documentation": "https://github.com/FlexMeasures/flexmeasures-hacs#flexmeasures",
-  "homekit": {},
+  "documentation": "https://github.com/FlexMeasures/flexmeasures-ha-integration#flexmeasures",
+  "integration_type": "service",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/FlexMeasures/flexmeasures-hacs/issues",
+  "issue_tracker": "https://github.com/FlexMeasures/flexmeasures-ha-integration/issues",
   "requirements": [
-    "flexmeasures-client[s2]==0.9.3",
-    "isodate==0.6.1"
+    "flexmeasures-client[s2]==0.9.3"
   ],
-  "ssdp": [],
-  "version": "0.3.9",
-  "zeroconf": []
+  "version": "0.4.0"
 }

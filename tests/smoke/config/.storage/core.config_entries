@@ -22,6 +22,8 @@
           "soc_min": 0.0,
           "soc_max": 0.001,
           "s2": {
+            "asset_id": 113,
+            "consumption_sensor_id": 357,
             "soc_minima_sensor_id": 218,
             "soc_maxima_sensor_id": 217,
             "fill_level_sensor_id": 215,

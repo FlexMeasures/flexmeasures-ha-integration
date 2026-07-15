@@ -7,8 +7,6 @@ from typing import Any, cast
 
 from flexmeasures_client import FlexMeasuresClient
 from flexmeasures_client.exceptions import EmailValidationError
-import voluptuous as vol
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import async_get_hass
 from homeassistant.data_entry_flow import FlowResult, section
@@ -19,93 +17,65 @@ from homeassistant.helpers.schema_config_entry_flow import (
     SchemaFlowError,
     SchemaFlowFormStep,
 )
+import voluptuous as vol
 
 from .const import DOMAIN
 
-
-S2_SCHEMA = vol.Schema(
-    {
-        vol.Optional(
-            "asset_id", default=113, description={"suggested_value": 113}
-        ): int,
-        vol.Optional(
-            "consumption_sensor_id", default=357, description={"suggested_value": 357}
-        ): int,
-        vol.Optional(
-            "soc_minima_sensor_id", default=218, description={"suggested_value": 218}
-        ): int,
-        vol.Optional(
-            "soc_maxima_sensor_id", default=217, description={"suggested_value": 217}
-        ): int,
-        vol.Optional(
-            "fill_level_sensor_id", default=215, description={"suggested_value": 215}
-        ): int,
-        vol.Optional(
-            "fill_rate_sensor_id", default=214, description={"suggested_value": 214}
-        ): int,
-        vol.Optional(
-            "usage_forecast_sensor_id",
-            default=229,
-            description={"suggested_value": 229},
-        ): int,
-        vol.Optional(
-            "thp_fill_rate_sensor_id", default=226, description={"suggested_value": 226}
-        ): int,
-        vol.Optional(
-            "thp_efficiency_sensor_id",
-            default=225,
-            description={"suggested_value": 225},
-        ): int,
-        vol.Optional(
-            "nes_fill_rate_sensor_id", default=222, description={"suggested_value": 222}
-        ): int,
-        vol.Optional(
-            "nes_efficiency_sensor_id",
-            default=221,
-            description={"suggested_value": 221},
-        ): int,
-        vol.Optional(
-            "active_actuator_id_sensor_id",
-            default=222,
-            description={"suggested_value": 222},
-        ): int,
-        vol.Optional(
-            "rm_discharge_sensor_id", default=213, description={"suggested_value": 213}
-        ): int,
-        vol.Optional(
-            "state_of_charge_sensor_id", default=2, description={"suggested_value": 2}
-        ): int,
-        vol.Optional(
-            "leakage_behaviour_sensor_id",
-            default=213,
-            description={"suggested_value": 213},
-        ): int,
-    }
+# The asset and sensor ids below identify entities on *your* FlexMeasures
+# server, so there is no sensible default for them: earlier versions shipped
+# the ids of one pilot's server, which silently pointed fresh installs at
+# somebody else's asset. They are optional because they are only needed when
+# the S2 (FRBC/TUNES) control path is used.
+S2_FIELDS = (
+    "asset_id",
+    "consumption_sensor_id",
+    "soc_minima_sensor_id",
+    "soc_maxima_sensor_id",
+    "fill_level_sensor_id",
+    "fill_rate_sensor_id",
+    "usage_forecast_sensor_id",
+    "thp_fill_rate_sensor_id",
+    "thp_efficiency_sensor_id",
+    "nes_fill_rate_sensor_id",
+    "nes_efficiency_sensor_id",
+    "active_actuator_id_sensor_id",
+    "rm_discharge_sensor_id",
+    "state_of_charge_sensor_id",
+    "leakage_behaviour_sensor_id",
 )
+
+S2_SCHEMA = vol.Schema({vol.Optional(field): vol.Any(int, None) for field in S2_FIELDS})
 
 SCHEMA = vol.Schema(
     {
-        vol.Required("url", default="https://seita.energy"): str,
-        vol.Required(
-            "username",
-            default="example@example.com",
-        ): str,
-        vol.Required("password", default="password"): str,
-        vol.Optional("power_sensor", default=5): int,
+        vol.Required("url"): str,
+        vol.Required("username"): str,
+        vol.Required("password"): str,
+        vol.Optional("power_sensor"): int,
         vol.Optional("schedule_duration", default="PT24H"): str,
-        vol.Optional(
-            "consumption_price_sensor", description={"suggested_value": 2}
-        ): int,
-        vol.Optional(
-            "production_price_sensor", description={"suggested_value": 2}
-        ): int,
-        vol.Optional("soc_sensor", description={"suggested_value": 4}): int,
+        vol.Optional("consumption_price_sensor"): int,
+        vol.Optional("production_price_sensor"): int,
+        vol.Optional("soc_sensor"): int,
         vol.Optional("soc_unit", default="kWh"): str,
-        vol.Optional("soc_min", default=10.1): vol.Coerce(float),
-        vol.Optional("soc_max", default=1.1): vol.Coerce(float),
+        vol.Optional("soc_min"): vol.Coerce(float),
+        vol.Optional("soc_max"): vol.Coerce(float),
         vol.Optional("s2"): section(S2_SCHEMA, {"collapsed": True}),
     }
 )
+
+
+def schema_defaults(schema: vol.Schema) -> dict[str, Any]:
+    """Return the fields of a schema that have a default, and their defaults.
+
+    Voluptuous sets `Marker.default` to a non-callable sentinel when a field has
+    no default, so callers cannot just call `field.default()`.
+    """
+    defaults: dict[str, Any] = {}
+    for field in schema.schema:
+        default = getattr(field, "default", vol.UNDEFINED)
+        if default is not vol.UNDEFINED and callable(default):
+            defaults[str(field)] = default()
+    return defaults
 
 
 def get_host_and_ssl_from_url(url: str) -> tuple[str, bool]:
@@ -176,7 +146,7 @@ class ConfigFlowHandler(SchemaConfigFlowHandler, domain=DOMAIN):
 
     reauth_entry: ConfigEntry
 
-    VERSION = 3
+    VERSION = 4
 
     def async_config_entry_title(self, options: Mapping[str, Any]) -> str:
         """Return config entry title."""

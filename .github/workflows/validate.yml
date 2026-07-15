@@ -2,15 +2,21 @@ name: Validate
 
 on:
   push:
+  pull_request:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
+
+env:
+  # Home Assistant 2026.7 runs on Python 3.14, and so does the pinned
+  # pytest-homeassistant-custom-component.
+  PYTHON_VERSION: "3.14"
 
 jobs:
   validate-hacs:
     runs-on: "ubuntu-latest"
     steps:
-      - uses: "actions/checkout@v3"
+      - uses: "actions/checkout@v4"
       - name: HACS validation
         uses: "hacs/action@main"
         with:
@@ -24,38 +30,50 @@ jobs:
 
   check:
     runs-on: ubuntu-latest
-    name: Check (on Python 3.12)
+    name: Check
     steps:
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: 3.12
-      - uses: actions/checkout@v3
-      - uses: pre-commit/action@v3.0.0
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: pre-commit/action@v3.0.1
 
   test:
     needs: check
     runs-on: ubuntu-latest
-    name: "Test (on Python 3.12)"
+    # The `env` context is not available in a job's `name`, so the version is
+    # spelled out here; PYTHON_VERSION above is what actually gets installed.
+    name: "Test (on Python 3.14)"
     steps:
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.12
-
       - name: Check out src from Git
-        uses: actions/checkout@v3
-      - name: Get history and tags for SCM versioning to work
+        uses: actions/checkout@v4
+
+      # Install with uv, because that is what Home Assistant itself uses to
+      # install an integration's requirements. It matters here: s2-python still
+      # declares Requires-Python <3.14, which pip enforces and uv does not, so
+      # pip cannot install flexmeasures-client[s2] on the Python that Home
+      # Assistant 2026.7 runs on -- while Home Assistant can, and does (the
+      # smoke test proves the S2 path works inside a real HA container).
+      # Installing the way production installs is the whole point: a test
+      # environment that resolves differently from the real one is what let the
+      # broken v0.3.7 release through in the first place.
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Create the virtual environment
         run: |
-          git fetch --prune --unshallow
-          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          uv venv --python ${{ env.PYTHON_VERSION }}
+          echo "$PWD/.venv/bin" >> $GITHUB_PATH
 
       - name: Install test requirements
-        run: pip install -r requirements.test.txt
+        run: uv pip install -r requirements.test.txt
 
       - name: Install integration requirements from the manifest
         # Tests must run against the exact versions Home Assistant installs for
         # users. tests/test_manifest.py guards that this step stays in sync.
         run: |
-          pip install $(python -c "import json; print(' '.join(json.load(open('custom_components/flexmeasures_hacs/manifest.json'))['requirements']))")
+          uv pip install $(python -c "import json; print(' '.join(json.load(open('custom_components/flexmeasures_hacs/manifest.json'))['requirements']))")
 
       - name: Run all tests except those marked to be skipped by GitHub AND record coverage
         run: pytest
