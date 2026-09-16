@@ -8,6 +8,10 @@ from homeassistant.exceptions import ServiceValidationError
 import homeassistant.util.dt as dt_util
 from homeassistant.util.dt import parse_duration
 import pytest
+from pytest_homeassistant_custom_component.test_util.aiohttp import (
+    AiohttpClientMocker,
+    AiohttpClientMockResponse,
+)
 from s2python.common import ControlType
 
 from custom_components.flexmeasures_hacs.const import (
@@ -69,6 +73,67 @@ async def test_trigger_and_get_schedule(
             },
             flex_context={"consumption-price-sensor": 2, "production-price-sensor": 2},
         )
+
+
+async def test_trigger_and_get_schedule_polls_while_the_job_runs(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, setup_fm_integration
+) -> None:
+    """Keep polling while FlexMeasures reports an unfinished scheduling job, then store the schedule.
+
+    Since FlexMeasures v1.0.0, polling an unfinished scheduling job returns HTTP 202 with the job status.
+    flexmeasures-client 0.9.3 mistook that job status for the schedule itself, so the service failed with KeyError: 'values'.
+    """
+    client = setup_fm_integration.runtime_data.client
+    client.access_token = "test-token"
+    client.polling_interval = 0
+    job_id = "some-job-id"
+    json_headers = {"Content-Type": "application/json"}
+    polls = 0
+
+    async def respond(method, url, data):
+        nonlocal polls
+        polls += 1
+        if polls < 3:
+            return AiohttpClientMockResponse(
+                method,
+                url,
+                status=202,
+                json={
+                    "status": "STARTED",
+                    "message": "The scheduling job is currently running.",
+                },
+                headers=json_headers,
+            )
+        return AiohttpClientMockResponse(
+            method,
+            url,
+            json={
+                "values": [0.5, 0.25, -0.0, -0.0],
+                "start": "2026-09-16T10:00:00+02:00",
+                "duration": "PT1H",
+                "unit": "MW",
+            },
+            headers=json_headers,
+        )
+
+    aioclient_mock.get(
+        f"http://localhost:5000/api/v3_0/sensors/1/schedules/{job_id}",
+        side_effect=respond,
+    )
+    with patch(
+        "flexmeasures_client.client.FlexMeasuresClient.trigger_schedule",
+        return_value=job_id,
+    ):
+        await hass.services.async_call(
+            DOMAIN,
+            "trigger_and_get_schedule",
+            service_data={"soc_at_start": 10},
+            blocking=True,
+        )
+
+    assert polls == 3
+    schedule = setup_fm_integration.runtime_data.schedule_state.schedule
+    assert [slot["value"] for slot in schedule] == [500, 250, 0, 0]
 
 
 async def test_post_measurements(hass: HomeAssistant, setup_fm_integration) -> None:

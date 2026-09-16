@@ -1,3 +1,8 @@
+# Home Assistant 2026.7, and so this integration, needs Python 3.14 (see validate.yml).
+# Without this pin, pre-commit builds hook environments on whichever Python runs it,
+# and mypy on an older Python cannot parse the integration's 3.14 syntax.
+default_language_version:
+  python: python3.14
 repos:
   # Ruff replaces flake8, isort, black and pyupgrade, which used to run here
   # (and in setup.cfg) side by side, with partly contradicting settings.
