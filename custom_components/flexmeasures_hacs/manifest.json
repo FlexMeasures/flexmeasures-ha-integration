@@ -13,7 +13,7 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/FlexMeasures/flexmeasures-ha-integration/issues",
   "requirements": [
-    "flexmeasures-client[s2]==0.9.3"
+    "flexmeasures-client[s2]==0.9.5"
   ],
-  "version": "0.4.0"
+  "version": "0.4.1"
 }
