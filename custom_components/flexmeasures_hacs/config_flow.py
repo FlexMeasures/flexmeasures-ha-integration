@@ -44,7 +44,9 @@ S2_FIELDS = (
     "leakage_behaviour_sensor_id",
 )
 
-S2_SCHEMA = vol.Schema({vol.Optional(field): vol.Any(int, None) for field in S2_FIELDS})
+# `vol.Maybe` rather than `vol.Any(int, None)`: Home Assistant serializes a form's schema to show it,
+# and its serializer cannot convert `vol.Any`, so every form containing it failed with a 500.
+S2_SCHEMA = vol.Schema({vol.Optional(field): vol.Maybe(int) for field in S2_FIELDS})
 
 SCHEMA = vol.Schema(
     {

@@ -1,11 +1,14 @@
 """Test the FlexMeasures config flow."""
 
+from http import HTTPStatus
 from unittest.mock import patch
 
 from homeassistant import config_entries, data_entry_flow
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
+from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.typing import ClientSessionGenerator
 
 from custom_components.flexmeasures_hacs.config_flow import (
     S2_SCHEMA,
@@ -195,3 +198,33 @@ async def test_downgrade_is_refused_cleanly(hass: HomeAssistant) -> None:
     # The stored configuration is left untouched, so re-upgrading recovers it.
     assert future_entry.version == CURRENT_VERSION + 1
     assert future_entry.data == CONFIG
+
+
+async def test_forms_load_over_http(
+    hass: HomeAssistant, hass_client: ClientSessionGenerator
+) -> None:
+    """The config and options forms must load in the Home Assistant frontend.
+
+    The frontend fetches each form over HTTP, and Home Assistant serializes the form's schema to send it.
+    In v0.4.0 and v0.4.1 that serialization failed on the S2 section,
+    so opening either form showed "Config could not be loaded: 500 Internal Server Error".
+    Flows driven through `hass.config_entries.flow` never serialize the schema, so only this route catches it.
+    """
+    assert await async_setup_component(hass, "config", {})
+    client = await hass_client()
+
+    response = await client.post(
+        "/api/config/config_entries/flow", json={"handler": DOMAIN}
+    )
+    assert response.status == HTTPStatus.OK, await response.text()
+    assert {field["name"] for field in (await response.json())["data_schema"]} >= {
+        "url",
+        "s2",
+    }
+
+    entry = MockConfigEntry(domain=DOMAIN, version=CURRENT_VERSION, options=CONFIG)
+    entry.add_to_hass(hass)
+    response = await client.post(
+        "/api/config/config_entries/options/flow", json={"handler": entry.entry_id}
+    )
+    assert response.status == HTTPStatus.OK, await response.text()
