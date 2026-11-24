@@ -142,17 +142,17 @@ async def trigger_and_get_schedule(call: ServiceCall) -> None:
         soc_min=get_from_option_or_config("soc_min", entry),
         soc_targets=call.data.get("soc_targets"),
     )
-    flex_context = client.create_storage_flex_context(
+    flex_context = create_flex_context(
         consumption_price_sensor=get_from_option_or_config(
             "consumption_price_sensor", entry
         ),
         production_price_sensor=get_from_option_or_config(
             "production_price_sensor", entry
         ),
+        overrides=call.data.get("flex_context", {}),
     )
 
     flex_model.update(call.data.get("flex_model", {}))
-    flex_context.update(call.data.get("flex_context", {}))
 
     duration = get_from_option_or_config("schedule_duration", entry)
     schedule_input = {
@@ -303,6 +303,36 @@ def time_ceil(time, delta, epoch=None):
     if mod:
         return time + (delta - mod)
     return time
+
+
+def create_flex_context(
+    consumption_price_sensor: int | None,
+    production_price_sensor: int | None,
+    overrides: dict,
+) -> dict:
+    """Build the flex-context for a schedule request from the configured price sensors and the service call's flex-context.
+
+    The configured price sensors go out as `consumption-price` and `production-price`, referring to a sensor.
+    FlexMeasures keeps SoC constraints hard while the deprecated `consumption-price-sensor` and `production-price-sensor` fields are used,
+    and it rejects relaxation settings next to them,
+    so the old field names made a schedule infeasible whenever the SoC minima could not be met.
+
+    A price given in the service call's flex-context, under either field name, replaces the configured one,
+    so that the request never names the same price twice.
+    """
+    flex_context: dict = {}
+    for direction, sensor_id in (
+        ("consumption", consumption_price_sensor),
+        ("production", production_price_sensor),
+    ):
+        overridden = any(
+            key in overrides
+            for key in (f"{direction}-price", f"{direction}-price-sensor")
+        )
+        if sensor_id is not None and not overridden:
+            flex_context[f"{direction}-price"] = {"sensor": sensor_id}
+    flex_context.update(overrides)
+    return flex_context
 
 
 def get_from_option_or_config(key: str, entry: ConfigEntry, section: str | None = None):
