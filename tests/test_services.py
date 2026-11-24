@@ -71,8 +71,56 @@ async def test_trigger_and_get_schedule(
                 "soc-max": 0.001,
                 "soc-min": 0.0,
             },
-            flex_context={"consumption-price-sensor": 2, "production-price-sensor": 2},
+            flex_context={
+                "consumption-price": {"sensor": 2},
+                "production-price": {"sensor": 2},
+            },
         )
+
+
+@pytest.mark.parametrize(
+    ("call_flex_context", "expected_flex_context"),
+    [
+        # Other flex-context fields from the service call are added to the configured prices.
+        (
+            {"inflexible-device-sensors": [3]},
+            {
+                "consumption-price": {"sensor": 2},
+                "production-price": {"sensor": 2},
+                "inflexible-device-sensors": [3],
+            },
+        ),
+        # A price from the service call replaces the configured one, rather than being sent next to it.
+        (
+            {"consumption-price": {"sensor": 4}},
+            {"consumption-price": {"sensor": 4}, "production-price": {"sensor": 2}},
+        ),
+        # Automations written for the deprecated field names keep working,
+        # and FlexMeasures does not receive both field names for the same price.
+        (
+            {"production-price-sensor": 5},
+            {"consumption-price": {"sensor": 2}, "production-price-sensor": 5},
+        ),
+    ],
+)
+async def test_trigger_and_get_schedule_flex_context_from_service_call(
+    hass: HomeAssistant,
+    setup_fm_integration,
+    call_flex_context: dict,
+    expected_flex_context: dict,
+) -> None:
+    """Merge the service call's flex-context with the configured price sensors."""
+    with patch(
+        "flexmeasures_client.client.FlexMeasuresClient.trigger_and_get_schedule",
+        return_value={"values": [0.5], "unit": "MW"},
+    ) as mocked_trigger:
+        await hass.services.async_call(
+            DOMAIN,
+            "trigger_and_get_schedule",
+            service_data={"soc_at_start": 10, "flex_context": call_flex_context},
+            blocking=True,
+        )
+    assert mocked_trigger.await_args.kwargs["flex_context"] == expected_flex_context
 
 
 async def test_trigger_and_get_schedule_polls_while_the_job_runs(
